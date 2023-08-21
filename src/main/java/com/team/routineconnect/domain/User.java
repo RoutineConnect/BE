@@ -27,7 +27,7 @@ public class User {
     @Column
     private String profile;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     @JoinColumn
     private List<Routine> routines = new ArrayList<>();
 }

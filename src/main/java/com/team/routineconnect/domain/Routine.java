@@ -3,6 +3,7 @@ package com.team.routineconnect.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +36,13 @@ public class Routine {
     @Column(nullable = false)
     private boolean shared;
 
-    @OneToMany(mappedBy = "routine")
+    @Column
+    private LocalDateTime createdDate;
+
+    @Column
+    private LocalDateTime endedDate;
+
+    @OneToMany(mappedBy = "routine", orphanRemoval = true)
     @JoinColumn
     private List<DayOrder> dayOrderList=new ArrayList<>();
 
