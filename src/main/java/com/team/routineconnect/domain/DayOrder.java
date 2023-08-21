@@ -3,7 +3,6 @@ package com.team.routineconnect.domain;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Table(name = "DAY_ORDERS")
 @Entity
 public class DayOrder {
 
@@ -13,7 +12,7 @@ public class DayOrder {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name="ROUTINE_ID", nullable = false)
+    @JoinColumn(name="routine_id", nullable = false)
     private Routine routine;
 
     @Column(nullable = false)

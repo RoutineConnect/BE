@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Table(name = "ROUTINES")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
@@ -19,7 +18,7 @@ public class Routine {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name="USER_ID", nullable = false)
+    @JoinColumn(name="user_id", nullable = false)
     private User user;
 
 //    일월화수목금토
