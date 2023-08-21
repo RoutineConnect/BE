@@ -9,7 +9,7 @@ public class DayOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
-    private long id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name="routine_id", nullable = false)
@@ -22,6 +22,6 @@ public class DayOrder {
     private DayType day;
 
     @Column(nullable = false)
-    private float position;
+    private Float position;
 }
 
