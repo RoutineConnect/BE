@@ -19,7 +19,7 @@ public class DayOrder {
     @Column(nullable = false)
     private LocalDateTime date;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private DayType day;
 
     @Column(nullable = false)
