@@ -1,8 +1,12 @@
 package com.team.routineconnect.domain;
 
+import lombok.Getter;
+
 import javax.persistence.*;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 public class DayOrder {
 
@@ -12,6 +16,10 @@ public class DayOrder {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name="user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
     @JoinColumn(name="routine_id", nullable = false)
     private Routine routine;
 
@@ -19,7 +27,7 @@ public class DayOrder {
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
-    private DayType day;
+    private DayOfWeek day;
 
     @Column(nullable = false)
     private Float position;

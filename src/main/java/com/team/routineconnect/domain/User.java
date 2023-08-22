@@ -1,13 +1,15 @@
 package com.team.routineconnect.domain;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
 @Entity
 public class User {
@@ -15,9 +17,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
-    private long id;
+    private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false, unique = true)
@@ -28,5 +30,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     @JoinColumn
-    private List<Routine> routines = new ArrayList<>();
+    private final List<Routine> routines = new ArrayList<>();
+
+    @Builder
+    public User(String email) {
+        this.email = email;
+    }
 }
