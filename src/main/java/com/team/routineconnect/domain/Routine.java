@@ -16,7 +16,6 @@ import java.util.List;
 public class Routine {
 
     @OneToMany(mappedBy = "routine", orphanRemoval = true)
-    @JoinColumn
     private final List<DayOrder> dayOrderList = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,25 +27,26 @@ public class Routine {
     //    일월화수목금토
 //    ________ 0 or 1
     @Column(nullable = false)
-    private Byte routineDay;
-    @Column(nullable = false)
     private String title;
     @Column
     private String hour;
     @Column(nullable = false)
+    private Byte routineDay;
+    @Column(nullable = false)
     private Boolean shared;
-    @Column
+    @Column(nullable = false)
     private LocalDateTime createdDate;
     @Column
     private LocalDateTime endedDate;
 
     @Builder
-    public Routine(User user, Byte routineDay, String title, String hour, Boolean shared, LocalDateTime createdDate) {
+    public Routine(User user, String title, String hour, Byte routineDay, Boolean shared, LocalDateTime createdDate, LocalDateTime endedDate) {
         this.user = user;
-        this.routineDay = routineDay;
         this.title = title;
         this.hour = hour;
+        this.routineDay = routineDay;
         this.shared = shared;
         this.createdDate = createdDate;
+        this.endedDate = endedDate;
     }
 }

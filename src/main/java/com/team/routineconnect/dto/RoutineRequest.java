@@ -11,19 +11,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class RoutineCreateRequest {
-    private String title;
-    private Byte routineDay;
-    private String hour;
-    private Boolean shared;
+public class RoutineRequest {
 
-    public Routine toEntity(User user, LocalDateTime createdDate) {
+    private String title;
+    private String hour;
+    private Byte routineDay;
+    private Boolean shared;
+    private LocalDateTime createdDate;
+    private LocalDateTime endedDate;
+
+    public Routine toEntity(User user) {
         return Routine.builder()
                 .user(user)
                 .title(title)
                 .hour(hour)
+                .routineDay(routineDay)
                 .shared(shared)
                 .createdDate(createdDate)
+                .endedDate(endedDate)
                 .build();
     }
 }

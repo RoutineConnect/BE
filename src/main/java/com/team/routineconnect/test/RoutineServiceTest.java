@@ -1,32 +1,35 @@
 package com.team.routineconnect.test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.domain.DayOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.repository.DayOrderRepository;
 import com.team.routineconnect.repository.RoutineRepository;
+import com.team.routineconnect.service.RoutineService;
+import com.team.routineconnect.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ActiveProfiles("test")
 @SpringBootTest
-@AutoConfigureMockMvc
 public class RoutineServiceTest {
 
     @Autowired
-    protected ObjectMapper objectMapper;
-    @Autowired
     RoutineService routineService;
+    @Autowired
+    UserService userService;
     @Autowired
     RoutineRepository routineRepository;
     @Autowired
@@ -38,23 +41,28 @@ public class RoutineServiceTest {
     private String hour;
     private Boolean shared;
     private LocalDateTime createdDate;
+    private LocalDateTime endedDate;
+    private String title1 = "title1";
+    private String title2 = "title2";
 
     @BeforeEach
     public void set() {
-        this.user1 = new User("1");
-        this.routineDay = 0b1111111;
-        this.hour = "hour";
+        this.user1 = userService.save(new User("홍길동","@",null));
+        this.routineDay = (byte) 0b11111110;
+        this.hour = null;
         this.shared = false;
         this.createdDate = LocalDateTime.parse("2023-08-22T22:55:00");
+        this.endedDate = null;
+        this.title1 = "title1";
+        this.title2 = "title2";
     }
 
     @DisplayName("루틴 추가 성공")
     @Test
     public void 루틴추가Test() throws Exception {
-        final String title = "title";
-        final Routine routine = new Routine(user1, routineDay, title, hour, shared, createdDate);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
 
-        routineService.add(routine);
+        routineService.save(user1.getId(), createdDate, request);
 
         // Then
         List<Routine> routines = routineRepository.findAll();
@@ -67,14 +75,12 @@ public class RoutineServiceTest {
     @DisplayName("루틴이 존재 할 때 새로운 루틴 추가 성공")
     @Test
     public void 이미루틴이있을때새루틴추가Test() throws Exception {
-        final String title1 = "title1";
-        final String title2 = "title2";
-        final LocalDateTime laterRoutineDate = LocalDateTime.now();
-        final Routine routine1 = new Routine(user1, routineDay, title1, hour, shared, createdDate);
-        final Routine routine2 = new Routine(user1, routineDay, title2, hour, shared, laterRoutineDate);
 
-        routineService.add(routine1);
-        routineService.add(routine2);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate);
+
+        routineService.save(user1.getId(), createdDate, request1);
+        routineService.save(user1.getId(), createdDate, request2);
 
         // Then
         List<Routine> routines = routineRepository.findAll();
@@ -83,28 +89,62 @@ public class RoutineServiceTest {
         List<DayOrder> allDayOrders = dayOrderRepository.findAll();
         assertThat(allDayOrders.size()).isEqualTo(14);
 
-        List<DayOrder> dayOrder = dayOrderRepository.findByUserAndDate(user1, createdDate);
+        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user1, createdDate.with(LocalTime.MIN));
+        assertThat(dayOrders.size()).isEqualTo(2);
+    }
+
+    @DisplayName("루틴이 존재 할 때 일주일 뒤 새로운 루틴 추가 성공")
+    @Test
+    public void 이미루틴이있을때일주일뒤새루틴추가Test() throws Exception {
+
+        final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate);
+
+        routineService.save(user1.getId(), createdDate, request1);
+        routineService.save(user1.getId(), laterRoutineDate, request2);
+
+        // Then
+        List<Routine> routines = routineRepository.findAll();
+        assertThat(routines.size()).isEqualTo(2);
+
+        List<DayOrder> allDayOrders = dayOrderRepository.findAll();
+        assertThat(allDayOrders.size()).isEqualTo(21);
+
+        List<DayOrder> dayOrder = dayOrderRepository.findByUserAndDate(user1, createdDate.with(LocalTime.MIN));
         assertThat(dayOrder.size()).isEqualTo(1);
 
-        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user1, laterRoutineDate);
+        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user1, laterRoutineDate.with(LocalTime.MIN));
         assertThat(dayOrders.size()).isEqualTo(2);
     }
 
     @DisplayName("루틴 순서 변경 성공")
     @Test
     public void 루틴순서변경Test() throws Exception {
-        final String title1 = "title1";
-        final String title2 = "title2";
         final Float position = 0.5f;
-        final Routine routine1 = new Routine(user1, routineDay, title1, hour, shared, createdDate);
-        final Routine routine2 = new Routine(user1, routineDay, title2, hour, shared, createdDate);
-        routineService.add(routine1);
-        routineService.add(routine2);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate);
+        Routine routine1 = routineService.save(user1.getId(), createdDate, request1);
+        Routine routine2 = routineService.save(user1.getId(), createdDate, request2);
 
-        routineService.modifyOrder(routine2, position);
+        routineService.modifyOrder(user1.getId(), routine2.getId(), createdDate, position);
 
-        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user1, createdDate);
-        assertThat(dayOrders.get(0).getRoutine()).isEqualTo(routine2);
-        assertThat(dayOrders.get(1).getRoutine()).isEqualTo(routine1);
+        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDateOrderByPosition(user1, createdDate.with(LocalTime.MIN));
+        assertThat(dayOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
+        assertThat(dayOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
+    }
+
+    @DisplayName("루틴 요일 변경 성공")
+    @Test
+    public void 루틴요일변경Test() throws Exception {
+        final Byte newRoutineDay = 0b111110;
+        final Routine routine1 = new Routine(user1, title1, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
+        routineService.save(user1.getId(), createdDate, request);
+
+        routineService.edit(routine1, request);
+
+        List<DayOrder> dayOrders = dayOrderRepository.findAll();
+        assertThat(dayOrders.size()).isEqualTo(5);
     }
 }
