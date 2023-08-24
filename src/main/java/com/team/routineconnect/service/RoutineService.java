@@ -37,48 +37,12 @@ public class RoutineService {
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
             int dayIndex = day.getValue();
-            if ((dayOfWeekBits & (1 << dayIndex)) != 0) {
-//                해당 요일의 가장 최근 날짜 마지막 position
-                Optional<LocalDateTime> maxDateOptional = dayOrderRepository.findMaxDateByUserAndDateAndDay(user, currentDate, day);
-                LocalDateTime maxDate = maxDateOptional.orElse(currentDate);
-                Float position = 1f;
-
-                if (maxDateOptional.isPresent()) {
-//                    이전 기록이 오늘이면
-                    if (currentDate.equals(maxDate)) {
-                        position=dayOrderRepository.findPositionByUserAndDateAndDay(user,currentDate,day)+1;
-                    } else {
-//                        이전 기록이 있으면 이전 기록을 현재 날짜로 가져오고
-                        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user, maxDate);
-                        for (DayOrder dayOrder : dayOrders) {
-                            DayOrder newDayOrder = DayOrder.builder()
-                                    .user(user)
-                                    .routine(dayOrder.getRoutine())
-                                    .date(currentDate)
-                                    .day(day)
-                                    .position(dayOrder.getPosition())
-                                    .build();
-                            dayOrderRepository.save(newDayOrder);
-                        }
-//                        해당 날짜 position + 1 할당
-                        position = dayOrders.get(dayOrders.size() - 1).getPosition() + 1;
-                    }
-                }
-
-                DayOrder dayOrder = DayOrder.builder()
-                        .user(user)
-                        .routine(routine)
-                        .date(currentDate)
-                        .day(day)
-                        .position(position)
-                        .build();
-
-                dayOrderRepository.save(dayOrder);
+            if (isDaySelected(dayOfWeekBits, day)) {
+                updateDayOrder(user, routine, currentDate,day);
             }
-
             currentDate = currentDate.plusDays(1);
-        }
 
+        }
         return routine;
     }
 
@@ -94,5 +58,52 @@ public class RoutineService {
     }
 
     public void edit(Routine routine, RoutineRequest request) {
+    }
+
+    public List<Routine> findAll() {
+        return routineRepository.findAll();
+    }
+
+    public boolean isDaySelected(Byte routineDay, DayOfWeek dayOfWeek) {
+        return (routineDay & (1 << dayOfWeek.getValue())) != 0;
+    }
+
+    public void updateDayOrder(User user, Routine routine, LocalDateTime currentDate, DayOfWeek day) {
+//            해당 요일의 가장 최근 날짜 마지막 position
+        Optional<LocalDateTime> maxDateOptional = dayOrderRepository.findMaxDateByUserAndDateAndDay(user, currentDate, day);
+        LocalDateTime maxDate = maxDateOptional.orElse(currentDate);
+        Float position = 1f;
+
+        if (maxDateOptional.isPresent()) {
+//                    이전 기록이 오늘이면
+            if (currentDate.equals(maxDate)) {
+                position = dayOrderRepository.findPositionByUserAndDateAndDay(user, currentDate, day) + 1;
+            } else {
+//                        이전 기록이 있으면 이전 기록을 현재 날짜로 가져오고
+                List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user, maxDate);
+                for (DayOrder dayOrder : dayOrders) {
+                    DayOrder newDayOrder = DayOrder.builder()
+                            .user(user)
+                            .routine(dayOrder.getRoutine())
+                            .date(currentDate)
+                            .day(day)
+                            .position(dayOrder.getPosition())
+                            .build();
+                    dayOrderRepository.save(newDayOrder);
+                }
+//                        해당 날짜 position + 1 할당
+                position = dayOrders.get(dayOrders.size() - 1).getPosition() + 1;
+            }
+        }
+
+        DayOrder dayOrder = DayOrder.builder()
+                .user(user)
+                .routine(routine)
+                .date(currentDate)
+                .day(day)
+                .position(position)
+                .build();
+
+        dayOrderRepository.save(dayOrder);
     }
 }
