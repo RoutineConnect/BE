@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -31,8 +30,6 @@ public class RoutineServiceTest {
     UserService userService;
     @Autowired
     DayOrderRepository dayOrderRepository;
-    @Autowired
-    private WebApplicationContext context;
     private User user1;
     private Byte routineDay;
     private String hour;
@@ -127,22 +124,22 @@ public class RoutineServiceTest {
 
         routineService.modifyOrder(user1.getId(), routine2.getId(), createdDate, position);
 
-        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDateOrderByPosition(user1, createdDate.with(LocalTime.MIN));
+        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).with(LocalTime.MIN));
         assertThat(dayOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
         assertThat(dayOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
     }
 
-//    @DisplayName("루틴 요일 변경 성공")
-//    @Test
-//    public void 루틴요일변경Test() throws Exception {
-//        final Byte newRoutineDay = 0b111110;
-//        final Routine routine1 = new Routine(user1, title1, hour, routineDay, shared, createdDate, endedDate);
-//        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
-//        routineService.save(user1.getId(), createdDate, request);
-//
-//        routineService.edit(routine1, request);
-//
-//        List<DayOrder> dayOrders = dayOrderRepository.findAll();
-//        assertThat(dayOrders.size()).isEqualTo(5);
-//    }
+    @DisplayName("루틴 요일 변경 성공")
+    @Test
+    public void 루틴요일변경Test() throws Exception {
+        final Byte newRoutineDay = 0b111110;
+        final Routine routine1 = new Routine(user1, title1, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate);
+        routineService.save(user1.getId(), createdDate, request);
+
+        routineService.edit(routine1, request);
+
+        List<DayOrder> dayOrders = dayOrderRepository.findAll();
+        assertThat(dayOrders.size()).isEqualTo(5);
+    }
 }

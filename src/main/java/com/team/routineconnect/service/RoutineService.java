@@ -36,12 +36,10 @@ public class RoutineService {
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
-            int dayIndex = day.getValue();
             if (isDaySelected(dayOfWeekBits, day)) {
-                updateDayOrder(user, routine, currentDate,day);
+                updateDayOrder(user, routine, currentDate, day);
             }
             currentDate = currentDate.plusDays(1);
-
         }
         return routine;
     }
@@ -50,11 +48,12 @@ public class RoutineService {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Routine routine = routineRepository.findById(routineId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        DayOrder dayOrder = dayOrderRepository.findByUserAndRoutineAndDate(user, routine, date.with(LocalTime.MIN))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Routine not found"));
+        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndRoutineAndDateAfter(user, routine, date.with(LocalTime.MIN));
 
-        dayOrder.updatePosition(position);
+        for (DayOrder dayOrder : dayOrders) {
+            dayOrder.updatePosition(position);
+        }
     }
 
     public void edit(Routine routine, RoutineRequest request) {
@@ -64,23 +63,23 @@ public class RoutineService {
         return routineRepository.findAll();
     }
 
-    public boolean isDaySelected(Byte routineDay, DayOfWeek dayOfWeek) {
-        return (routineDay & (1 << dayOfWeek.getValue())) != 0;
+    public boolean isDaySelected(Byte routineDay, DayOfWeek day) {
+        return (routineDay & (1 << day.getValue())) != 0;
     }
 
     public void updateDayOrder(User user, Routine routine, LocalDateTime currentDate, DayOfWeek day) {
-//            해당 요일의 가장 최근 날짜 마지막 position
-        Optional<LocalDateTime> maxDateOptional = dayOrderRepository.findMaxDateByUserAndDateAndDay(user, currentDate, day);
-        LocalDateTime maxDate = maxDateOptional.orElse(currentDate);
+//        해당 요일의 가장 최근 날짜
+        Optional<LocalDateTime> lastDateOptional = dayOrderRepository.findMaxDateByUserAndDateAndDay(user, currentDate, day);
+        LocalDateTime lastDate = lastDateOptional.orElse(currentDate);
         Float position = 1f;
 
-        if (maxDateOptional.isPresent()) {
-//                    이전 기록이 오늘이면
-            if (currentDate.equals(maxDate)) {
+        if (lastDateOptional.isPresent()) {
+//            이전 기록이 오늘이면
+            if (currentDate.equals(lastDate)) {
                 position = dayOrderRepository.findPositionByUserAndDateAndDay(user, currentDate, day) + 1;
             } else {
-//                        이전 기록이 있으면 이전 기록을 현재 날짜로 가져오고
-                List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user, maxDate);
+//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오고
+                List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user, lastDate);
                 for (DayOrder dayOrder : dayOrders) {
                     DayOrder newDayOrder = DayOrder.builder()
                             .user(user)
@@ -91,7 +90,7 @@ public class RoutineService {
                             .build();
                     dayOrderRepository.save(newDayOrder);
                 }
-//                        해당 날짜 position + 1 할당
+//                해당 날짜 position을 이전 기록의 마지막 position + 1로 할당
                 position = dayOrders.get(dayOrders.size() - 1).getPosition() + 1;
             }
         }

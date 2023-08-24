@@ -8,12 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface DayOrderRepository extends JpaRepository<DayOrder, Long>, DayOrderRepositoryCustom {
     List<DayOrder> findByUserAndDate(User user, LocalDateTime date);
+
     List<DayOrder> findByUserAndDateOrderByPosition(User user, LocalDateTime date);
 
-    Optional<DayOrder> findByUserAndRoutineAndDate(User user, Routine routine, LocalDateTime date);
+    List<DayOrder> findByUserAndRoutineAndDateAfter(User user, Routine routine, LocalDateTime date);
 }
