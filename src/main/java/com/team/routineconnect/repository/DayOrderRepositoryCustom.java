@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface DayOrderRepositoryCustom {
     Optional<LocalDateTime> findMaxDateByUserAndDateAndDay(User user, LocalDateTime date, DayOfWeek day);
-    Float findPositionByUserAndDateAndDay(User user, LocalDateTime date, DayOfWeek day);
+    Float findMaxPositionByUserAndDate(User user, LocalDateTime date);
 }

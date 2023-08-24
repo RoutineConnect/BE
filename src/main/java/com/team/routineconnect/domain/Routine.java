@@ -1,13 +1,16 @@
 package com.team.routineconnect.domain;
 
+import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,8 +33,9 @@ public class Routine {
     private String title;
     @Column
     private String hour;
+    @Convert(converter = EnumSetToBitmaskConverter.class)
     @Column(nullable = false)
-    private Byte routineDay;
+    private EnumSet<DayOfWeek> repeatingDays;
     @Column(nullable = false)
     private Boolean shared;
     @Column(nullable = false)
@@ -40,11 +44,11 @@ public class Routine {
     private LocalDateTime endedDate;
 
     @Builder
-    public Routine(User user, String title, String hour, Byte routineDay, Boolean shared, LocalDateTime createdDate, LocalDateTime endedDate) {
+    public Routine(User user, String title, String hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared, LocalDateTime createdDate, LocalDateTime endedDate) {
         this.user = user;
         this.title = title;
         this.hour = hour;
-        this.routineDay = routineDay;
+        this.repeatingDays = repeatingDays;
         this.shared = shared;
         this.createdDate = createdDate;
         this.endedDate = endedDate;

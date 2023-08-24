@@ -32,13 +32,12 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public Float findPositionByUserAndDateAndDay(User user, LocalDateTime date, DayOfWeek day){
+    public Float findMaxPositionByUserAndDate(User user, LocalDateTime date){
         QDayOrder d = QDayOrder.dayOrder;
         return queryFactory
-                .select(d.position)
+                .select(d.position.max())
                 .from(d)
-                .where(d.day.eq(day)
-                        .and(d.date.eq(date))
+                .where(d.date.eq(date)
                         .and(d.user.eq(user)))
                 .fetchOne();
     }
