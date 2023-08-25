@@ -10,6 +10,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 
+import static java.time.LocalDateTime.MIN;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -29,8 +31,8 @@ public class RoutineRequest {
                 .hour(hour)
                 .repeatingDays(repeatingDays)
                 .shared(shared)
-                .createdDate(createdDate)
-                .endedDate(endedDate)
+                .createdDate(createdDate.with(MIN))
+                .endedDate(endedDate != null ? endedDate.with(MIN) : null)
                 .build();
     }
 }

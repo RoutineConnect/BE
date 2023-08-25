@@ -13,11 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
-import static java.time.LocalTime.MIN;
+import static java.time.LocalDateTime.MIN;
 
 @Transactional
 @RequiredArgsConstructor
@@ -29,18 +30,18 @@ public class RoutineService {
     private final UserService userService;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
-    public Routine save(Long userId, LocalDateTime date, RoutineRequest request) {
+    public Routine save(Long userId, RoutineRequest request) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        LocalDateTime currentDate = date.with(MIN);
+        LocalDateTime currentDate=request.getCreatedDate();
         LocalDateTime lastDate = currentDate.plusDays(7);
-        EnumSet<DayOfWeek> repeatingDays = enumSetToBitmaskConverter.convertToEntityAttribute(request.getRoutineDay());
+        EnumSet<DayOfWeek> repeatingDaySet = enumSetToBitmaskConverter.convertToEntityAttribute(request.getRoutineDay());
 
-        Routine routine = routineRepository.save(request.toEntity(user, repeatingDays));
+        Routine routine = routineRepository.save(request.toEntity(user, repeatingDaySet));
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
-            if (repeatingDays.contains(day)) {
+            if (repeatingDaySet.contains(day)) {
                 updateDayOrder(user, routine, currentDate, day);
             }
             currentDate = currentDate.plusDays(1);
@@ -68,6 +69,7 @@ public class RoutineService {
     }
 
     public void updateDayOrder(User user, Routine routine, LocalDateTime currentDate, DayOfWeek day) {
+        currentDate=currentDate.with(MIN);
 //        해당 요일의 가장 최근 날짜
         Optional<LocalDateTime> lastDateOptional = dayOrderRepository.findMaxDateByUserAndDateAndDay(user, currentDate, day);
         LocalDateTime lastDate = lastDateOptional.orElse(currentDate);

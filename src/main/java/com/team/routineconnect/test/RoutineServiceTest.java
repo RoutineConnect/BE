@@ -1,5 +1,6 @@
 package com.team.routineconnect.test;
 
+import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.DayOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
@@ -14,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +33,8 @@ public class RoutineServiceTest {
     UserService userService;
     @Autowired
     DayOrderRepository dayOrderRepository;
+    @Autowired
+    EnumSetToBitmaskConverter enumSetToBitmaskConverter;
     private User user1;
     private Byte routineDay;
     private String hour;
@@ -57,7 +62,7 @@ public class RoutineServiceTest {
     public void 루틴추가Test() throws Exception {
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
 
-        routineService.save(user1.getId(), createdDate, request);
+        routineService.save(user1.getId(), request);
 
         // Then
         List<Routine> routines = routineService.findAll();
@@ -74,8 +79,8 @@ public class RoutineServiceTest {
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate);
 
-        routineService.save(user1.getId(), createdDate, request1);
-        routineService.save(user1.getId(), createdDate, request2);
+        routineService.save(user1.getId(), request1);
+        routineService.save(user1.getId(), request2);
 
         // Then
         List<Routine> routines = routineService.findAll();
@@ -96,8 +101,8 @@ public class RoutineServiceTest {
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate);
 
-        routineService.save(user1.getId(), createdDate, request1);
-        routineService.save(user1.getId(), laterRoutineDate, request2);
+        routineService.save(user1.getId(), request1);
+        routineService.save(user1.getId(), request2);
 
         // Then
         List<Routine> routines = routineService.findAll();
@@ -119,8 +124,8 @@ public class RoutineServiceTest {
         final Float position = 0.5f;
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate);
-        Routine routine1 = routineService.save(user1.getId(), createdDate, request1);
-        Routine routine2 = routineService.save(user1.getId(), createdDate, request2);
+        Routine routine1 = routineService.save(user1.getId(), request1);
+        Routine routine2 = routineService.save(user1.getId(), request2);
 
         routineService.modifyOrder(user1.getId(), routine2.getId(), createdDate, position);
 
@@ -132,10 +137,11 @@ public class RoutineServiceTest {
     @DisplayName("루틴 요일 변경 성공")
     @Test
     public void 루틴요일변경Test() throws Exception {
+        final EnumSet<DayOfWeek> repeatingDays=enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
         final Byte newRoutineDay = 0b111110;
-        final Routine routine1 = new Routine(user1, title1, hour, routineDay, shared, createdDate, endedDate);
+        final Routine routine1 = new Routine(user1, title1, hour, repeatingDays, shared, createdDate, endedDate);
         final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate);
-        routineService.save(user1.getId(), createdDate, request);
+        routineService.save(user1.getId(), request);
 
         routineService.edit(routine1, request);
 
