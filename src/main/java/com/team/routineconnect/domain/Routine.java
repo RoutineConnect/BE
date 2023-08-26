@@ -1,13 +1,16 @@
 package com.team.routineconnect.domain;
 
+import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -16,7 +19,6 @@ import java.util.List;
 public class Routine {
 
     @OneToMany(mappedBy = "routine", orphanRemoval = true)
-    @JoinColumn
     private final List<DayOrder> dayOrderList = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,25 +30,27 @@ public class Routine {
     //    일월화수목금토
 //    ________ 0 or 1
     @Column(nullable = false)
-    private Byte routineDay;
-    @Column(nullable = false)
     private String title;
     @Column
     private String hour;
+    @Convert(converter = EnumSetToBitmaskConverter.class)
+    @Column(nullable = false)
+    private EnumSet<DayOfWeek> repeatingDays;
     @Column(nullable = false)
     private Boolean shared;
-    @Column
+    @Column(nullable = false)
     private LocalDateTime createdDate;
     @Column
     private LocalDateTime endedDate;
 
     @Builder
-    public Routine(User user, Byte routineDay, String title, String hour, Boolean shared, LocalDateTime createdDate) {
+    public Routine(User user, String title, String hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared, LocalDateTime createdDate, LocalDateTime endedDate) {
         this.user = user;
-        this.routineDay = routineDay;
         this.title = title;
         this.hour = hour;
+        this.repeatingDays = repeatingDays;
         this.shared = shared;
         this.createdDate = createdDate;
+        this.endedDate = endedDate;
     }
 }

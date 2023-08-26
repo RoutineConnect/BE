@@ -14,26 +14,23 @@ import java.util.List;
 @Entity
 public class User {
 
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private final List<Routine> routines = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private Long id;
-
     @Column(nullable = false, unique = true)
     private String name;
-
     @Column(nullable = false, unique = true)
     private String email;
-
     @Column
     private String profile;
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true)
-    @JoinColumn
-    private final List<Routine> routines = new ArrayList<>();
-
     @Builder
-    public User(String email) {
+    public User(String name, String email, String profile) {
+        this.name = name;
         this.email = email;
+        this.profile = (profile != null) ? profile : null;
     }
 }

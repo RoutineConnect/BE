@@ -1,11 +1,12 @@
 package com.team.routineconnect.domain;
 
-import lombok.Getter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class DayOrder {
@@ -31,5 +32,17 @@ public class DayOrder {
 
     @Column(nullable = false)
     private Float position;
-}
 
+    @Builder
+    public DayOrder(User user, Routine routine, LocalDateTime date, DayOfWeek day, Float position){
+        this.user=user;
+        this.routine=routine;
+        this.date=date;
+        this.day=day;
+        this.position=position;
+    }
+
+    public void updatePosition(Float position) {
+        this.position=position;
+    }
+}

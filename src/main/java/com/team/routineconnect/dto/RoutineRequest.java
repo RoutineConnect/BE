@@ -6,24 +6,33 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
+
+import static java.time.LocalDateTime.MIN;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class RoutineCreateRequest {
-    private String title;
-    private Byte routineDay;
-    private String hour;
-    private Boolean shared;
+public class RoutineRequest {
 
-    public Routine toEntity(User user, LocalDateTime createdDate) {
+    private String title;
+    private String hour;
+    private Byte routineDay;
+    private Boolean shared;
+    private LocalDateTime createdDate;
+    private LocalDateTime endedDate;
+
+    public Routine toEntity(User user, EnumSet<DayOfWeek> repeatingDays) {
         return Routine.builder()
                 .user(user)
                 .title(title)
                 .hour(hour)
+                .repeatingDays(repeatingDays)
                 .shared(shared)
-                .createdDate(createdDate)
+                .createdDate(createdDate.with(MIN))
+                .endedDate(endedDate != null ? endedDate.with(MIN) : null)
                 .build();
     }
 }

@@ -4,10 +4,16 @@ import com.team.routineconnect.domain.DayOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface DayOrderRepository extends JpaRepository {
+@Repository
+public interface DayOrderRepository extends JpaRepository<DayOrder, Long>, DayOrderRepositoryCustom {
     List<DayOrder> findByUserAndDate(User user, LocalDateTime date);
+
+    List<DayOrder> findByUserAndDateOrderByPosition(User user, LocalDateTime date);
+
+    List<DayOrder> findByUserAndRoutineAndDateAfter(User user, Routine routine, LocalDateTime date);
 }
