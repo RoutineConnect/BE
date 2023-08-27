@@ -16,11 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -141,7 +139,6 @@ public class RoutineServiceTest {
     @DisplayName("루틴 요일 바로 변경 성공")
     @Test
     public void 루틴요일바로변경Test() throws Exception {
-        final EnumSet<DayOfWeek> repeatingDays = enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
         final Byte newRoutineDay = 0b111110;
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);

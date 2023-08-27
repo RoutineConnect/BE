@@ -31,7 +31,7 @@ public class User {
     public User(String name, String email, String profile) {
         this.name = name;
         this.email = email;
-        this.profile = (profile != null) ? profile : null;
+        this.profile = profile;
     }
 
     public Boolean has(Routine routine) {

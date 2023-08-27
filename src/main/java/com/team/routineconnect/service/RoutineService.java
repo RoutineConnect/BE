@@ -41,7 +41,7 @@ public class RoutineService {
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
             if (routine.isSetTo(day)) {
-                updateBeforeDateDayOrder(user, routine, currentDate, day);
+                updateBeforeDateDayOrder(user, currentDate, day);
                 updateAfterDateDayOrder(user, routine, currentDate, day);
             }
             currentDate = currentDate.plusDays(1);
@@ -55,7 +55,7 @@ public class RoutineService {
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
 
-        validateUserHasRoutine(user, routine);
+        validate(user.has(routine));
 
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
         Byte bitsToModify = (byte) (originalDays ^ request.getRoutineDay());
@@ -84,7 +84,7 @@ public class RoutineService {
         for (RoutineUpdate update : routineUpdates) {
             Routine routine = routineRepository.findById(update.getRoutineId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
-            validateUserHasRoutine(user, routine);
+            validate(user.has(routine));
 
             List<DayOrder> dayOrders = dayOrderRepository
                     .findByRoutineAndDateAfterOrderByDate(routine, date.with(MIN));
@@ -98,7 +98,7 @@ public class RoutineService {
         }
     }
 
-    public void updateBeforeDateDayOrder(User user, Routine routine, LocalDateTime currentDate, DayOfWeek day) {
+    public void updateBeforeDateDayOrder(User user, LocalDateTime currentDate, DayOfWeek day) {
         currentDate = currentDate.with(MIN);
 //        해당 요일의 가장 최근 날짜
         Optional<LocalDateTime> lastDateOptional = dayOrderRepository.findMaxDateByUserAndDayAndDateLessThan(user, day, currentDate);
@@ -180,16 +180,14 @@ public class RoutineService {
 
 //                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
                 for (DayOrder dayOrder : dayOrders) {
-                    if (dayOrder.getRoutine() != routine) {
-                        DayOrder newDayOrder = DayOrder.builder()
-                                .user(user)
-                                .routine(dayOrder.getRoutine())
-                                .date(currentDate)
-                                .day(day)
-                                .position(dayOrder.getPosition())
-                                .build();
-                        dayOrderRepository.save(newDayOrder);
-                    }
+                    DayOrder newDayOrder = DayOrder.builder()
+                            .user(user)
+                            .routine(dayOrder.getRoutine())
+                            .date(currentDate)
+                            .day(day)
+                            .position(dayOrder.getPosition())
+                            .build();
+                    dayOrderRepository.save(newDayOrder);
                 }
             }
         }
@@ -199,8 +197,8 @@ public class RoutineService {
         return routineRepository.findAll();
     }
 
-    void validateUserHasRoutine(User user, Routine routine) {
-        if (!user.has(routine)) {
+    void validate(Boolean condition) {
+        if (condition) {
             throw new IllegalArgumentException("Invalid routine ID");
         }
     }
