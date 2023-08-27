@@ -5,6 +5,7 @@ import com.team.routineconnect.domain.DayOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
+import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.repository.DayOrderRepository;
 import com.team.routineconnect.service.RoutineService;
 import com.team.routineconnect.service.UserService;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -60,7 +62,7 @@ public class RoutineServiceTest {
     @DisplayName("루틴 추가 성공")
     @Test
     public void 루틴추가Test() throws Exception {
-        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
 
         routineService.save(user1.getId(), request);
 
@@ -76,8 +78,8 @@ public class RoutineServiceTest {
     @Test
     public void 이미루틴이있을때새루틴추가Test() throws Exception {
 
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
 
         routineService.save(user1.getId(), request1);
         routineService.save(user1.getId(), request2);
@@ -98,8 +100,8 @@ public class RoutineServiceTest {
     public void 이미루틴이있을때일주일뒤새루틴추가Test() throws Exception {
 
         final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter);
 
         routineService.save(user1.getId(), request1);
         routineService.save(user1.getId(), request2);
@@ -122,28 +124,30 @@ public class RoutineServiceTest {
     @Test
     public void 루틴순서변경Test() throws Exception {
         final Float position = 0.5f;
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         Routine routine1 = routineService.save(user1.getId(), request1);
         Routine routine2 = routineService.save(user1.getId(), request2);
+        List<RoutineUpdate> routineUpdate = new ArrayList<>(List.of(new RoutineUpdate(routine2.getId(), position)));
 
-        routineService.modifyOrder(user1.getId(), routine2.getId(), createdDate, position);
+        routineService.modifyOrder(user1.getId(), createdDate, routineUpdate);
 
-        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).with(LocalTime.MIN));
+        List<DayOrder> dayOrders = dayOrderRepository
+                .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).with(LocalTime.MIN));
         assertThat(dayOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
         assertThat(dayOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
     }
 
-    @DisplayName("루틴 요일 변경 성공")
+    @DisplayName("루틴 요일 바로 변경 성공")
     @Test
-    public void 루틴요일변경Test() throws Exception {
-        final EnumSet<DayOfWeek> repeatingDays=enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
+    public void 루틴요일바로변경Test() throws Exception {
+        final EnumSet<DayOfWeek> repeatingDays = enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
         final Byte newRoutineDay = 0b111110;
-        final Routine routine1 = new Routine(user1, title1, hour, repeatingDays, shared, createdDate, endedDate);
-        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate);
-        routineService.save(user1.getId(), request);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final Routine routine1 = routineService.save(user1.getId(), request);
 
-        routineService.edit(routine1, request);
+        routineService.edit(user1.getId(), routine1.getId(), createdDate, newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(5);

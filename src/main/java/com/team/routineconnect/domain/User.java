@@ -33,4 +33,8 @@ public class User {
         this.email = email;
         this.profile = (profile != null) ? profile : null;
     }
+
+    public Boolean has(Routine routine) {
+        return this.routines.contains(routine);
+    }
 }

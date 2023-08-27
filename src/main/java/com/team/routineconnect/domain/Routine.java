@@ -1,6 +1,7 @@
 package com.team.routineconnect.domain;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
+import com.team.routineconnect.dto.RoutineRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,5 +53,18 @@ public class Routine {
         this.shared = shared;
         this.createdDate = createdDate;
         this.endedDate = endedDate;
+    }
+
+    public Boolean isSetTo(Object o) {
+        return repeatingDays.contains(o);
+    }
+
+    public void setRoutine(RoutineRequest request) {
+        this.title=request.getTitle();
+        this.hour=request.getHour();
+        this.repeatingDays=request.routineDayToEntityAttribute();
+        this.shared=request.getShared();
+        this.createdDate=request.getCreatedDate();
+        this.endedDate=request.getEndedDate();
     }
 }
