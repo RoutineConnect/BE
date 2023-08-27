@@ -143,11 +143,11 @@ public class RoutineServiceTest {
     public void 루틴요일바로변경Test() throws Exception {
         final EnumSet<DayOfWeek> repeatingDays = enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
         final Byte newRoutineDay = 0b111110;
-        final Routine routine1 = new Routine(user1, title1, hour, repeatingDays, shared, createdDate, endedDate);
-        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        routineService.save(user1.getId(), request);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
+        final Routine routine1 = routineService.save(user1.getId(), request);
 
-        routineService.edit(user1.getId(), routine1.getId(), createdDate, request);
+        routineService.edit(user1.getId(), routine1.getId(), createdDate, newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(5);

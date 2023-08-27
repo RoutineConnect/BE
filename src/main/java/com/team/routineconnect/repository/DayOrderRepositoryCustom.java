@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface DayOrderRepositoryCustom {
     Optional<LocalDateTime> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDateTime date);
+    Optional<LocalDateTime> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDateTime date);
     Float findMaxPositionByUserAndDate(User user, LocalDateTime date);
     List<LocalDateTime> findDatesByUserAndDayAndDayAfter(User user, DayOfWeek day, LocalDateTime date);
 }

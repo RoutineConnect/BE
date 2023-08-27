@@ -11,7 +11,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 
-import static java.time.LocalDateTime.MIN;
+import static java.time.LocalTime.MIN;
 
 @NoArgsConstructor
 @AllArgsConstructor

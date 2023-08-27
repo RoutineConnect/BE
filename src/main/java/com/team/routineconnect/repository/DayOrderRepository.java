@@ -14,6 +14,8 @@ import java.util.List;
 public interface DayOrderRepository extends JpaRepository<DayOrder, Long>, DayOrderRepositoryCustom {
     List<DayOrder> findByUserAndDate(User user, LocalDateTime date);
 
+    List<DayOrder> findByUserAndDateAndRoutineNot(User user, LocalDateTime date, Routine routine);
+
     List<DayOrder> findByUserAndDateOrderByPosition(User user, LocalDateTime date);
 
     List<DayOrder> findByRoutineAndDateAfterOrderByDate(Routine routine, LocalDateTime date);

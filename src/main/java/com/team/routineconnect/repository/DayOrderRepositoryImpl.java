@@ -32,6 +32,20 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
+    public Optional<LocalDateTime> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDateTime date) {
+        QDayOrder d = QDayOrder.dayOrder;
+        LocalDateTime maxDate = queryFactory
+                .select(d.date.max())
+                .from(d)
+                .where(d.day.eq(day)
+                        .and(d.date.lt(date))
+                        .and(d.user.eq(user)))
+                .fetchOne();
+
+        return Optional.ofNullable(maxDate);
+    }
+
+    @Override
     public Float findMaxPositionByUserAndDate(User user, LocalDateTime date) {
         QDayOrder d = QDayOrder.dayOrder;
 
@@ -44,7 +58,7 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public List<LocalDateTime> findDatesByUserAndDayAndDayAfter(User user, DayOfWeek day, LocalDateTime date){
+    public List<LocalDateTime> findDatesByUserAndDayAndDayAfter(User user, DayOfWeek day, LocalDateTime date) {
         QDayOrder d = QDayOrder.dayOrder;
 
         return queryFactory
