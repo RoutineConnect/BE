@@ -1,5 +1,6 @@
 package com.team.routineconnect.dto;
 
+import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import lombok.AllArgsConstructor;
@@ -23,16 +24,21 @@ public class RoutineRequest {
     private Boolean shared;
     private LocalDateTime createdDate;
     private LocalDateTime endedDate;
+    private EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
-    public Routine toEntity(User user, EnumSet<DayOfWeek> repeatingDays) {
+    public Routine toEntity(User user) {
         return Routine.builder()
                 .user(user)
                 .title(title)
                 .hour(hour)
-                .repeatingDays(repeatingDays)
+                .repeatingDays(routineDayToEntityAttribute())
                 .shared(shared)
                 .createdDate(createdDate.with(MIN))
                 .endedDate(endedDate != null ? endedDate.with(MIN) : null)
                 .build();
+    }
+
+    public EnumSet<DayOfWeek> routineDayToEntityAttribute() {
+        return enumSetToBitmaskConverter.convertToEntityAttribute(this.routineDay);
     }
 }

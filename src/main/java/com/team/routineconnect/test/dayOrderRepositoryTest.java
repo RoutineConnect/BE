@@ -1,5 +1,6 @@
 package com.team.routineconnect.test;
 
+import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.DayOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
@@ -12,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,12 +30,15 @@ public class dayOrderRepositoryTest {
     RoutineRepository routineRepository;
     @Autowired
     DayOrderRepository dayOrderRepository;
+    @Autowired
+    EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
     @DisplayName("유저와 날짜로 순서 조회 성공")
     @Test
     public void 유저와날짜로순서조회Test() throws Exception {
         final String title="title";
-        final Byte routineDay=(byte)0b11111110;
+        final EnumSet<DayOfWeek> routineDay=enumSetToBitmaskConverter
+                .convertToEntityAttribute((byte)0b11111110);
         final LocalDateTime createdDate=LocalDateTime.parse("2023-08-22T22:55:00");
         final User user=new User("홍길동","@",null);
         final Routine routine=new Routine(user,title,null,routineDay,false,createdDate,null);

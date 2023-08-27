@@ -21,7 +21,7 @@ public class DayOrder {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name="routine_id", nullable = false)
+    @JoinColumn(name="routine_id")
     private Routine routine;
 
     @Column(nullable = false)
@@ -44,5 +44,9 @@ public class DayOrder {
 
     public void updatePosition(Float position) {
         this.position=position;
+    }
+
+    public Boolean positionIs(Float position) {
+        return this.position.equals(position);
     }
 }

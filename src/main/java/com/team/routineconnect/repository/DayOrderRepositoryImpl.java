@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -18,13 +18,13 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<LocalDateTime> findMaxDateByUserAndDateAndDay(User user, LocalDateTime date, DayOfWeek day) {
+    public Optional<LocalDateTime> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDateTime date) {
         QDayOrder d = QDayOrder.dayOrder;
         LocalDateTime maxDate = queryFactory
                 .select(d.date.max())
                 .from(d)
                 .where(d.day.eq(day)
-                        .and(d.date.loe(date.with(LocalTime.MAX)))
+                        .and(d.date.loe(date))
                         .and(d.user.eq(user)))
                 .fetchOne();
 
@@ -32,13 +32,27 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public Float findMaxPositionByUserAndDate(User user, LocalDateTime date){
+    public Float findMaxPositionByUserAndDate(User user, LocalDateTime date) {
         QDayOrder d = QDayOrder.dayOrder;
+
         return queryFactory
                 .select(d.position.max())
                 .from(d)
                 .where(d.date.eq(date)
                         .and(d.user.eq(user)))
                 .fetchOne();
+    }
+
+    @Override
+    public List<LocalDateTime> findDatesByUserAndDayAndDayAfter(User user, DayOfWeek day, LocalDateTime date){
+        QDayOrder d = QDayOrder.dayOrder;
+
+        return queryFactory
+                .select(d.date)
+                .from(d)
+                .where(d.day.eq(day)
+                        .and(d.date.goe(date))
+                        .and(d.user.eq(user)))
+                .fetch();
     }
 }
