@@ -42,12 +42,12 @@ public class dayOrderRepositoryTest {
         final LocalDateTime createdDate=LocalDateTime.parse("2023-08-22T22:55:00");
         final User user=new User("홍길동","@",null);
         final Routine routine=new Routine(user,title,null,routineDay,false,createdDate,null);
-        final DayOrder dayOrder=new DayOrder(user,routine,createdDate,createdDate.getDayOfWeek(),1f);
+        final DayOrder dayOrder=new DayOrder(user,routine,createdDate.toLocalDate(),createdDate.getDayOfWeek(),1f);
         userRepository.save(user);
         routineRepository.save(routine);
         dayOrderRepository.save(dayOrder);
 
-        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user,createdDate);
+        List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user,createdDate.toLocalDate());
         assertThat(dayOrders.size()).isEqualTo(1);
     }
 }

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -28,16 +28,18 @@ public class DayOrder {
     private Routine routine;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     private DayOfWeek day;
 
     @Column(nullable = false)
     private Float position;
+    @Enumerated(EnumType.STRING)
+    private Accomplishment accomplishment;
 
     @Builder
-    public DayOrder(User user, Routine routine, LocalDateTime date, DayOfWeek day, Float position) {
+    public DayOrder(User user, Routine routine, LocalDate date, DayOfWeek day, Float position) {
         this.user = user;
         this.routine = routine;
         this.date = date;
@@ -45,11 +47,15 @@ public class DayOrder {
         this.position = position;
     }
 
+    public Boolean positionIs(Float position) {
+        return this.position.equals(position);
+    }
+
     public void updatePosition(Float position) {
         this.position = position;
     }
 
-    public Boolean positionIs(Float position) {
-        return this.position.equals(position);
+    public void updateAchievement(Accomplishment accomplishment) {
+        this.accomplishment = accomplishment;
     }
 }
