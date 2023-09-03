@@ -6,7 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 @WebMvcTest()
 public class RoutineControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+//    @Autowired
+//    private MockMvc mockMvc;
 
 }

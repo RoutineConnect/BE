@@ -98,14 +98,14 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public Double findAchievementByUserAndDate(User user, LocalDate date) {
-        Double totalRoutines = (double) findRoutinesByUserAndDate(user, date).size();
-        Long clearRoutines = queryFactory
+    public Float findAchievementByUserAndDate(User user, LocalDate date) {
+        float totalRoutines = (float) findRoutinesByUserAndDate(user, date).size();
+        float clearRoutines = (float) queryFactory
                 .select(Wildcard.count)
                 .from(dayOrder)
                 .where(dayOrder.accomplishment.eq(Accomplishment.CLEAR))
                 .fetch().get(0);
 
-        return totalRoutines != 0 ? clearRoutines / totalRoutines * 100.0 : 0.0;
+        return totalRoutines != 0 ? clearRoutines / totalRoutines * 100 : 0;
     }
 }

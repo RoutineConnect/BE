@@ -4,13 +4,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.hibernate.annotations.CascadeType.ALL;
 
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

@@ -36,7 +36,7 @@ public class RoutineService {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
 
-        return dayOrderRepository.findRoutinesByUserAndDate(user,date);
+        return dayOrderRepository.findRoutinesByUserAndDate(user, date);
     }
 
     public Routine addRoutine(Long userId, RoutineRequest request) {
@@ -59,7 +59,7 @@ public class RoutineService {
         return routine;
     }
 
-    public void edit(Long userId, Long routineId, RoutineRequest request) {
+    public void updateRoutine(Long userId, Long routineId, RoutineRequest request) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         Routine routine = routineRepository.findById(routineId)
@@ -90,9 +90,9 @@ public class RoutineService {
                 dayOrderRepository.deleteByRoutineAndDayAndDateGreaterThan(routine, day, currentDate);
             }
 
-            if (endDate.isPresent()
-                    && (currentDate.isEqual(endDate.get().toLocalDate())
-                    || currentDate.isAfter(endDate.get().toLocalDate()))) {
+            if (endDate.isPresent() && (
+                    currentDate.isEqual(endDate.get().toLocalDate())
+                            || currentDate.isAfter(endDate.get().toLocalDate()))) {
                 removeRoutine(user, routine, currentDate, day);
             }
 
@@ -123,16 +123,16 @@ public class RoutineService {
         }
     }
 
-    public List<Double> getAchievementsForWeek(Long userId, LocalDate date) {
+    public List<Float> getAchievementsForWeek(Long userId, LocalDate date) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-        LocalDate startDate=date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate endDate=startDate.plusDays(7);
-        List<Double> achievements = new ArrayList<>();
+        LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = startDate.plusDays(7);
+        List<Float> achievements = new ArrayList<>();
 
         while (startDate.isBefore(endDate)) {
             achievements.add(dayOrderRepository.findAchievementByUserAndDate(user, startDate));
-            startDate.plusDays(1);
+            startDate = startDate.plusDays(1);
         }
 
         return achievements;
@@ -140,7 +140,8 @@ public class RoutineService {
 
     public void updateBeforeDateDayOrder(User user, LocalDate date, DayOfWeek day) {
 //        해당 요일 전의 가장 최근 날짜
-        Optional<LocalDate> lastDateOptional = dayOrderRepository.findMaxDateByUserAndDayAndDateLessThan(user, day, date);
+        Optional<LocalDate> lastDateOptional = dayOrderRepository
+                .findMaxDateByUserAndDayAndDateLessThan(user, day, date);
 
         if (lastDateOptional.isPresent()) {
             LocalDate latestDate = lastDateOptional.get();

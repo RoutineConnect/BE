@@ -22,7 +22,7 @@ public class RoutineController {
 
     // 메인페이지 (개인 루틴) 조회
     @GetMapping("/page/{date}")
-    public ResponseEntity<List<RoutineWithAccomplishment>> getMemberRoutines(
+    public ResponseEntity<List<RoutineWithAccomplishment>> getMemberRoutinesOnDate(
             @PathVariable Long user_id, @PathVariable LocalDate date) {
         List<RoutineWithAccomplishment> routines = routineService.findRoutinesByUserOnDate(user_id, date);
         return ResponseEntity.ok(routines);
@@ -30,8 +30,9 @@ public class RoutineController {
 
     // 일자 별 달성도 표시 조회
     @GetMapping("/achievement/{date}")
-    public ResponseEntity<List<Double>> getAchievements(@PathVariable Long user_id, @PathVariable LocalDate date) {
-        List<Double> achievements = routineService.getAchievementsForWeek(user_id, date);
+    public ResponseEntity<List<Float>> getAchievementsForWeek(
+            @PathVariable Long user_id, @PathVariable LocalDate date) {
+        List<Float> achievements = routineService.getAchievementsForWeek(user_id, date);
         return ResponseEntity.ok(achievements);
     }
 
@@ -48,7 +49,7 @@ public class RoutineController {
             @PathVariable Long user_id,
             @RequestParam("routine_id") Long routine_id,
             @RequestBody RoutineRequest request) {
-        routineService.edit(user_id, routine_id, request);
+        routineService.updateRoutine(user_id, routine_id, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

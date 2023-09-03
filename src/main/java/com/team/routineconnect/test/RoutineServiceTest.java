@@ -151,7 +151,7 @@ public class RoutineServiceTest {
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final Routine routine1 = routineService.addRoutine(user1.getId(), request);
 
-        routineService.edit(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(5);
@@ -167,7 +167,7 @@ public class RoutineServiceTest {
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter);
         final Routine routine1 = routineService.addRoutine(user1.getId(), request);
 
-        routineService.edit(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(9);
@@ -182,7 +182,7 @@ public class RoutineServiceTest {
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final Routine routine1 = routineService.addRoutine(user1.getId(), request);
 
-        routineService.edit(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(7);
@@ -198,7 +198,7 @@ public class RoutineServiceTest {
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, earlierRoutineDate, endedDate, enumSetToBitmaskConverter);
         final Routine routine1 = routineService.addRoutine(user1.getId(), request);
 
-        routineService.edit(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         while (earlierRoutineDate.isBefore(createdDate)) {
             assertThat(dayOrderRepository
@@ -219,7 +219,7 @@ public class RoutineServiceTest {
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final Routine routine1 = routineService.addRoutine(user1.getId(), request);
 
-        routineService.edit(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(3);
@@ -239,7 +239,7 @@ public class RoutineServiceTest {
         final Routine routine1 = routineService.addRoutine(user1.getId(), request1);
         routineService.addRoutine(user1.getId(), request2);
 
-        routineService.edit(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findAll();
         assertThat(dayOrders.size()).isEqualTo(10);
@@ -257,7 +257,7 @@ public class RoutineServiceTest {
         endedDate = createdDate.plusDays(7);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, endedDate, endedDate, enumSetToBitmaskConverter);
 
-        routineService.edit(user1.getId(), routine.getId(), newRequest);
+        routineService.updateRoutine(user1.getId(), routine.getId(), newRequest);
 
         List<DayOrder> dayOrders = dayOrderRepository.findByDateGreaterThanEqual(endedDate.toLocalDate());
         for (DayOrder dayOrder : dayOrders) {
