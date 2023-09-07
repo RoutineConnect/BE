@@ -55,7 +55,7 @@ spring:
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       use-new-id-generator-mappings: false
@@ -67,3 +67,7 @@ spring:
   jackson:
     serialization:
       fail-on-empty-beans: false
+
+springboot:
+  jwt:
+    secret: flature!@#
