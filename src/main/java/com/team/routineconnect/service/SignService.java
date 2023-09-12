@@ -4,6 +4,7 @@ import com.team.routineconnect.common.CommonResponse;
 import com.team.routineconnect.config.security.JwtTokenProvider;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.SignInResultDto;
+import com.team.routineconnect.dto.SignUpRequestDto;
 import com.team.routineconnect.dto.SignUpResultDto;
 import com.team.routineconnect.repository.UserRepository;
 import org.slf4j.Logger;
@@ -28,21 +29,21 @@ public class SignService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public SignUpResultDto signUp(String id, String password, String name, String role) {
+    public SignUpResultDto signUp(SignUpRequestDto signUpRequestDto) {
         LOGGER.info("[getSignUpResult] 회원 가입 정보 전달");
         User user;
-        if (role.equalsIgnoreCase("admin")) {
+        if (signUpRequestDto.getRole().equalsIgnoreCase("admin")) {
             user = User.builder()
-                    .email(id)
-                    .name(name)
-                    .password(passwordEncoder.encode(password))
+                    .email(signUpRequestDto.getEmail())
+                    .name(signUpRequestDto.getName())
+                    .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
                     .roles(Collections.singletonList("ROLE_ADMIN"))
                     .build();
         } else {
             user = User.builder()
-                    .email(id)
-                    .name(name)
-                    .password(passwordEncoder.encode(password))
+                    .email(signUpRequestDto.getEmail())
+                    .name(signUpRequestDto.getName())
+                    .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
                     .roles(Collections.singletonList("ROLE_USER"))
                     .build();
         }
