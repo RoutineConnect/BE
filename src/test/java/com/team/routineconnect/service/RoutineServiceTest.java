@@ -1,4 +1,4 @@
-package com.team.routineconnect.test;
+package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.DayOrder;
@@ -7,8 +7,6 @@ import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.repository.DayOrderRepository;
-import com.team.routineconnect.service.RoutineService;
-import com.team.routineconnect.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,13 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RoutineServiceTest {
 
     @Autowired
-    RoutineService routineService;
+    protected RoutineService routineService;
     @Autowired
-    UserService userService;
+    protected UserService userService;
     @Autowired
-    DayOrderRepository dayOrderRepository;
+    protected DayOrderRepository dayOrderRepository;
     @Autowired
-    EnumSetToBitmaskConverter enumSetToBitmaskConverter;
+    protected EnumSetToBitmaskConverter enumSetToBitmaskConverter;
     private User user1;
     private Byte routineDay;
     private String hour;

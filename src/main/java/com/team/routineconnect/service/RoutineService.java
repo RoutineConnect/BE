@@ -1,5 +1,6 @@
 package com.team.routineconnect.service;
 
+import com.querydsl.core.Tuple;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.DayOrder;
 import com.team.routineconnect.domain.Routine;
@@ -7,6 +8,7 @@ import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.dto.RoutineWithAccomplishment;
+import com.team.routineconnect.mapper.ResultMapper;
 import com.team.routineconnect.repository.DayOrderRepository;
 import com.team.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -31,18 +34,23 @@ public class RoutineService {
     private final DayOrderRepository dayOrderRepository;
     private final UserService userService;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
+    private final ResultMapper resultMapper;
 
     public List<RoutineWithAccomplishment> findRoutinesByUserOnDate(Long userId, LocalDate date) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
 
-        return dayOrderRepository.findRoutinesByUserAndDate(user, date);
+        List<Tuple> results = dayOrderRepository.findRoutinesByUserAndDate(user, date);
+
+        return results.stream()
+                .map(resultMapper::mapToDto)
+                .collect(Collectors.toList());
     }
 
     public Routine addRoutine(Long userId, RoutineRequest request) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-        LocalDate currentDate = request.getCreatedDate().toLocalDate();
+        LocalDate currentDate = request.getCreated_date().toLocalDate();
         LocalDate lastDate = currentDate.plusDays(7);
 
         Routine routine = routineRepository.save(request.toEntity(user));
@@ -68,12 +76,12 @@ public class RoutineService {
         validate(user.has(routine));
 
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
-        Byte bitsToModify = (byte) (originalDays ^ request.getRoutineDay());
+        Byte bitsToModify = (byte) (originalDays ^ request.getRoutine_day());
         EnumSet<DayOfWeek> daysToModify = enumSetToBitmaskConverter.convertToEntityAttribute(bitsToModify);
         EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute();
-        LocalDate currentDate = request.getCreatedDate().toLocalDate();
+        LocalDate currentDate = request.getCreated_date().toLocalDate();
         LocalDate lastDate = currentDate.plusDays(7);
-        Optional<LocalDateTime> endDate = Optional.ofNullable(request.getEndedDate());
+        Optional<LocalDateTime> endDate = Optional.ofNullable(request.getEnded_date());
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -107,7 +115,7 @@ public class RoutineService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
 
         for (RoutineUpdate update : routineUpdates) {
-            Routine routine = routineRepository.findById(update.getRoutineId())
+            Routine routine = routineRepository.findById(update.getRoutine_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
             validate(user.has(routine));
 

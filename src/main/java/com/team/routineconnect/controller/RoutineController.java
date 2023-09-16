@@ -1,6 +1,5 @@
 package com.team.routineconnect.controller;
 
-import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.dto.RoutineWithAccomplishment;
@@ -18,7 +17,7 @@ import java.util.List;
 @RequestMapping("/api/member/{user_id}")
 public class RoutineController {
 
-    private RoutineService routineService;
+    private final RoutineService routineService;
 
     // 메인페이지 (개인 루틴) 조회
     @GetMapping("/page/{date}")
@@ -38,16 +37,16 @@ public class RoutineController {
 
     // 루틴 추가
     @PostMapping("/routine")
-    public ResponseEntity<Routine> addRoutine(@PathVariable Long user_id, @RequestBody RoutineRequest request) {
+    public ResponseEntity<Void> addRoutine(@PathVariable Long user_id, @RequestBody RoutineRequest request) {
         routineService.addRoutine(user_id, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // 루틴 수정
     @PatchMapping("/routine")
-    public ResponseEntity<Routine> updateRoutine(
+    public ResponseEntity<Void> updateRoutine(
             @PathVariable Long user_id,
-            @RequestParam("routine_id") Long routine_id,
+            @RequestParam Long routine_id,
             @RequestBody RoutineRequest request) {
         routineService.updateRoutine(user_id, routine_id, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

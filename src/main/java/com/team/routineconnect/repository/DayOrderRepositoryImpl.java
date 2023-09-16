@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team.routineconnect.domain.Accomplishment;
 import com.team.routineconnect.domain.User;
-import com.team.routineconnect.dto.RoutineWithAccomplishment;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +13,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.team.routineconnect.domain.QDayOrder.dayOrder;
 
@@ -74,24 +72,18 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public List<RoutineWithAccomplishment> findRoutinesByUserAndDate(User user, LocalDate date) {
+    public List<Tuple> findRoutinesByUserAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
         Optional<LocalDate> maxDateOptional = findMaxDateByUserAndDayAndDateBefore(user, day, date);
 
         if (maxDateOptional.isPresent()) {
-            List<Tuple> results = queryFactory
-                    .select(dayOrder.routine, dayOrder.accomplishment)
+            return queryFactory
+                    .select(dayOrder.routine, dayOrder.position, dayOrder.accomplishment)
                     .from(dayOrder)
                     .where(dayOrder.day.eq(day)
                             .and(dayOrder.date.loe(date))
                             .and(dayOrder.user.eq(user)))
                     .fetch();
-
-            return results.stream()
-                    .map(tuple -> new RoutineWithAccomplishment(
-                            tuple.get(dayOrder.routine),
-                            tuple.get(dayOrder.accomplishment)))
-                    .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }

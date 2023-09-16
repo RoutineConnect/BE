@@ -1,7 +1,7 @@
 package com.team.routineconnect.repository;
 
+import com.querydsl.core.Tuple;
 import com.team.routineconnect.domain.User;
-import com.team.routineconnect.dto.RoutineWithAccomplishment;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -13,6 +13,6 @@ public interface DayOrderRepositoryCustom {
     Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date);
     Optional<Float> findMaxPositionByUserAndDate(User user, LocalDate date);
     List<LocalDate> findDatesByUserAndDayAndDayGreaterThan(User user, DayOfWeek day, LocalDate date);
-    List<RoutineWithAccomplishment> findRoutinesByUserAndDate(User user, LocalDate date);
+    List<Tuple> findRoutinesByUserAndDate(User user, LocalDate date);
     Float findAchievementByUserAndDate(User user, LocalDate date);
 }

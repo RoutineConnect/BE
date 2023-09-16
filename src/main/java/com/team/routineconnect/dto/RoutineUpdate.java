@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class RoutineUpdate {
-    private Long routineId;
+    private Long routine_id;
     private Float position;
 }
