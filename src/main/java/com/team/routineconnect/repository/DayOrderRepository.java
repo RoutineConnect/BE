@@ -7,18 +7,28 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface DayOrderRepository extends JpaRepository<DayOrder, Long>, DayOrderRepositoryCustom {
-    List<DayOrder> findByUserAndDate(User user, LocalDateTime date);
+    List<DayOrder> findByUserAndDate(User user, LocalDate date);
 
-    List<DayOrder> findByUserAndDateAndRoutineNot(User user, LocalDateTime date, Routine routine);
+    List<DayOrder> findByUserAndRoutineAndDayAndDateLessThanEqual(User user, Routine routine, DayOfWeek day, LocalDate date);
 
-    List<DayOrder> findByUserAndDateOrderByPosition(User user, LocalDateTime date);
+    List<DayOrder> findByUserAndDateAndRoutineNot(User user, LocalDate date, Routine routine);
 
-    List<DayOrder> findByRoutineAndDateAfterOrderByDate(Routine routine, LocalDateTime date);
+    List<DayOrder> findByUserAndDateOrderByPosition(User user, LocalDate date);
 
-    void deleteByRoutineAndDate(Routine routine, LocalDateTime date);
+    List<DayOrder> findByRoutineAndDateAfterOrderByDate(Routine routine, LocalDate date);
+
+    void deleteByRoutineAndDate(Routine routine, LocalDate date);
+
+    void deleteByRoutineAndDayAndDateGreaterThan(Routine routine, DayOfWeek day, LocalDate date);
+
+
+    void deleteAllByRoutineAndDayAndDateGreaterThan(Routine routine, DayOfWeek day, LocalDate date);
+
+    List<DayOrder> findByDateGreaterThanEqual(LocalDate date);
+
 }

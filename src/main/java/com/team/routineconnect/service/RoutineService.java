@@ -6,6 +6,7 @@ import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
+import com.team.routineconnect.dto.RoutineWithAccomplishment;
 import com.team.routineconnect.repository.DayOrderRepository;
 import com.team.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-
-import static java.time.LocalTime.MIN;
 
 @Transactional
 @RequiredArgsConstructor
@@ -30,18 +32,26 @@ public class RoutineService {
     private final UserService userService;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
-    public Routine save(Long userId, RoutineRequest request) {
+    public List<RoutineWithAccomplishment> findRoutinesByUserOnDate(Long userId, LocalDate date) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-        LocalDateTime currentDate = request.getCreatedDate();
-        LocalDateTime lastDate = currentDate.plusDays(7);
+
+        return dayOrderRepository.findRoutinesByUserAndDate(user, date);
+    }
+
+    public Routine addRoutine(Long userId, RoutineRequest request) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+        LocalDate currentDate = request.getCreatedDate().toLocalDate();
+        LocalDate lastDate = currentDate.plusDays(7);
 
         Routine routine = routineRepository.save(request.toEntity(user));
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
             if (routine.isSetTo(day)) {
-                updateBeforeDateDayOrder(user, routine, currentDate, day);
+                updateBeforeDateDayOrder(user, currentDate, day);
+                updateTodayDayOrder(user, routine, currentDate, day);
                 updateAfterDateDayOrder(user, routine, currentDate, day);
             }
             currentDate = currentDate.plusDays(1);
@@ -49,45 +59,60 @@ public class RoutineService {
         return routine;
     }
 
-    public void edit(Long userId, Long routineId, LocalDateTime currentDate, RoutineRequest request) {
+    public void updateRoutine(Long userId, Long routineId, RoutineRequest request) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
 
-        validateUserHasRoutine(user, routine);
+        validate(user.has(routine));
 
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
         Byte bitsToModify = (byte) (originalDays ^ request.getRoutineDay());
         EnumSet<DayOfWeek> daysToModify = enumSetToBitmaskConverter.convertToEntityAttribute(bitsToModify);
-        LocalDateTime lastDate = currentDate.plusDays(7);
+        EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute();
+        LocalDate currentDate = request.getCreatedDate().toLocalDate();
+        LocalDate lastDate = currentDate.plusDays(7);
+        Optional<LocalDateTime> endDate = Optional.ofNullable(request.getEndedDate());
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
-            if (daysToModify.contains(day)) {
-                if (routine.isSetTo(day)) {
-                    removeBeforeDateDayOrder(user, routine, currentDate, day);
-                } else {
-                    updateAfterDateDayOrder(user, routine, currentDate, day);
-                }
+            List<DayOrder> dayOrders = dayOrderRepository
+                    .findByUserAndRoutineAndDayAndDateLessThanEqual(user, routine, day, currentDate);
+
+            if (routine.isSetTo(day) && dayOrders.isEmpty()) {
+                updateTodayDayOrder(user, routine, currentDate, day);
+            } else if (daysToModify.contains(day) && routine.isSetTo(day)) {
+                removeRoutine(user, routine, currentDate, day);
+            } else if (repeatingDays.contains(day) && routine.isNotSetTo(day)) {
+                updateTodayDayOrder(user, routine, currentDate, day);
+                updateAfterDateDayOrder(user, routine, currentDate, day);
+                dayOrderRepository.deleteByRoutineAndDayAndDateGreaterThan(routine, day, currentDate);
             }
+
+            if (endDate.isPresent() && (
+                    currentDate.isEqual(endDate.get().toLocalDate())
+                            || currentDate.isAfter(endDate.get().toLocalDate()))) {
+                removeRoutine(user, routine, currentDate, day);
+            }
+
             currentDate = currentDate.plusDays(1);
         }
 
         routine.setRoutine(request);
     }
 
-    public void modifyOrder(Long userId, LocalDateTime date, List<RoutineUpdate> routineUpdates) {
+    public void updateRoutineOrder(Long userId, LocalDate date, List<RoutineUpdate> routineUpdates) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
 
         for (RoutineUpdate update : routineUpdates) {
             Routine routine = routineRepository.findById(update.getRoutineId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
-            validateUserHasRoutine(user, routine);
+            validate(user.has(routine));
 
             List<DayOrder> dayOrders = dayOrderRepository
-                    .findByRoutineAndDateAfterOrderByDate(routine, date.with(MIN));
+                    .findByRoutineAndDateAfterOrderByDate(routine, date);
             Float originalPosition = dayOrders.get(0).getPosition();
 
             for (DayOrder dayOrder : dayOrders) {
@@ -98,20 +123,35 @@ public class RoutineService {
         }
     }
 
-    public void updateBeforeDateDayOrder(User user, Routine routine, LocalDateTime currentDate, DayOfWeek day) {
-        currentDate = currentDate.with(MIN);
-//        해당 요일의 가장 최근 날짜
-        Optional<LocalDateTime> lastDateOptional = dayOrderRepository.findMaxDateByUserAndDayAndDateLessThan(user, day, currentDate);
+    public List<Float> getAchievementsForWeek(Long userId, LocalDate date) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+        LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = startDate.plusDays(7);
+        List<Float> achievements = new ArrayList<>();
+
+        while (startDate.isBefore(endDate)) {
+            achievements.add(dayOrderRepository.findAchievementByUserAndDate(user, startDate));
+            startDate = startDate.plusDays(1);
+        }
+
+        return achievements;
+    }
+
+    public void updateBeforeDateDayOrder(User user, LocalDate date, DayOfWeek day) {
+//        해당 요일 전의 가장 최근 날짜
+        Optional<LocalDate> lastDateOptional = dayOrderRepository
+                .findMaxDateByUserAndDayAndDateLessThan(user, day, date);
 
         if (lastDateOptional.isPresent()) {
-            LocalDateTime latestDate = lastDateOptional.get();
-//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오고
+            LocalDate latestDate = lastDateOptional.get();
+//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
             List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDate(user, latestDate);
             for (DayOrder dayOrder : dayOrders) {
                 DayOrder newDayOrder = DayOrder.builder()
                         .user(user)
                         .routine(dayOrder.getRoutine())
-                        .date(currentDate)
+                        .date(date)
                         .day(day)
                         .position(dayOrder.getPosition())
                         .build();
@@ -120,26 +160,26 @@ public class RoutineService {
         }
     }
 
-    public void updateAfterDateDayOrder(User user, Routine routine, LocalDateTime date, DayOfWeek day) {
-        date = date.with(MIN);
-        List<LocalDateTime> dates = dayOrderRepository.findDatesByUserAndDayAndDayAfter(user, day, date);
+    public void updateTodayDayOrder(User user, Routine routine, LocalDate date, DayOfWeek day) {
+        Float position = dayOrderRepository.findMaxPositionByUserAndDate(user, date)
+                .orElse(0f);
 
-        if (dates.isEmpty()) {
-            float position = 1f;
+        DayOrder dayOrder = DayOrder.builder()
+                .user(user)
+                .routine(routine)
+                .date(date)
+                .day(day)
+                .position(position + 1)
+                .build();
 
-            DayOrder dayOrder = DayOrder.builder()
-                    .user(user)
-                    .routine(routine)
-                    .date(date)
-                    .day(day)
-                    .position(position)
-                    .build();
+        dayOrderRepository.save(dayOrder);
+    }
 
-            dayOrderRepository.save(dayOrder);
-        }
+    public void updateAfterDateDayOrder(User user, Routine routine, LocalDate date, DayOfWeek day) {
+        List<LocalDate> afterDates = dayOrderRepository.findDatesByUserAndDayAndDayGreaterThan(user, day, date);
 
-        for (LocalDateTime dateTime : dates) {
-            Float position = dayOrderRepository.findMaxPositionByUserAndDate(user, dateTime) + 1;
+        for (LocalDate dateTime : afterDates) {
+            float position = dayOrderRepository.findMaxPositionByUserAndDate(user, dateTime).get() + 1;
 
             DayOrder dayOrder = DayOrder.builder()
                     .user(user)
@@ -153,16 +193,16 @@ public class RoutineService {
         }
     }
 
-    public void removeBeforeDateDayOrder(User user, Routine routine, LocalDateTime currentDate, DayOfWeek day) {
-        currentDate = currentDate.with(MIN);
+    public void removeRoutine(User user, Routine routine, LocalDate date, DayOfWeek day) {
 //        해당 요일의 가장 최근 날짜
-        Optional<LocalDateTime> lastDateOptional = dayOrderRepository.findMaxDateByUserAndDayAndDateBefore(user, day, currentDate);
-        LocalDateTime latestDate = lastDateOptional.orElse(currentDate);
+        Optional<LocalDate> lastDateOptional = dayOrderRepository
+                .findMaxDateByUserAndDayAndDateBefore(user, day, date);
+        LocalDate latestDate = lastDateOptional.orElse(date);
 
         if (lastDateOptional.isPresent()) {
 //            이전 기록이 오늘이면
-            if (currentDate.equals(latestDate)) {
-                dayOrderRepository.deleteByRoutineAndDate(routine, currentDate);
+            if (date.equals(latestDate)) {
+                dayOrderRepository.deleteByRoutineAndDate(routine, date);
             } else {
                 List<DayOrder> dayOrders = dayOrderRepository.findByUserAndDateAndRoutineNot(user, latestDate, routine);
 
@@ -170,7 +210,7 @@ public class RoutineService {
                     DayOrder dayOrder = DayOrder.builder()
                             .user(user)
                             .routine(null)
-                            .date(currentDate)
+                            .date(date)
                             .day(day)
                             .position(0f)
                             .build();
@@ -180,28 +220,32 @@ public class RoutineService {
 
 //                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
                 for (DayOrder dayOrder : dayOrders) {
-                    if (dayOrder.getRoutine() != routine) {
-                        DayOrder newDayOrder = DayOrder.builder()
-                                .user(user)
-                                .routine(dayOrder.getRoutine())
-                                .date(currentDate)
-                                .day(day)
-                                .position(dayOrder.getPosition())
-                                .build();
-                        dayOrderRepository.save(newDayOrder);
-                    }
+                    DayOrder newDayOrder = DayOrder.builder()
+                            .user(user)
+                            .routine(dayOrder.getRoutine())
+                            .date(date)
+                            .day(day)
+                            .position(dayOrder.getPosition())
+                            .build();
+                    dayOrderRepository.save(newDayOrder);
                 }
             }
         }
+
+        dayOrderRepository.deleteAllByRoutineAndDayAndDateGreaterThan(routine, day, date);
     }
 
     public List<Routine> findAll() {
         return routineRepository.findAll();
     }
 
-    void validateUserHasRoutine(User user, Routine routine) {
-        if (!user.has(routine)) {
+    void validate(Boolean condition) {
+        if (!condition) {
             throw new IllegalArgumentException("Invalid routine ID");
         }
+    }
+
+    public void deleteAll() {
+        routineRepository.deleteAll();
     }
 }

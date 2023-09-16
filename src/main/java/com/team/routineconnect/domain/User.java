@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
@@ -20,6 +21,10 @@ import java.util.stream.Collectors;
 @Entity
 public class User implements UserDetails {
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private final List<Routine> routines = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private final List<Routine> dayOrders = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)

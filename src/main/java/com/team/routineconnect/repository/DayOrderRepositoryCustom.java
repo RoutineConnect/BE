@@ -1,15 +1,18 @@
 package com.team.routineconnect.repository;
 
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.RoutineWithAccomplishment;
 
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface DayOrderRepositoryCustom {
-    Optional<LocalDateTime> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDateTime date);
-    Optional<LocalDateTime> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDateTime date);
-    Float findMaxPositionByUserAndDate(User user, LocalDateTime date);
-    List<LocalDateTime> findDatesByUserAndDayAndDayAfter(User user, DayOfWeek day, LocalDateTime date);
+    Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date);
+    Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date);
+    Optional<Float> findMaxPositionByUserAndDate(User user, LocalDate date);
+    List<LocalDate> findDatesByUserAndDayAndDayGreaterThan(User user, DayOfWeek day, LocalDate date);
+    List<RoutineWithAccomplishment> findRoutinesByUserAndDate(User user, LocalDate date);
+    Float findAchievementByUserAndDate(User user, LocalDate date);
 }

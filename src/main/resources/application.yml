@@ -1,19 +1,32 @@
-#spring:
-#  config:
-#    activate:
-#      on-profile: test
-#  datasource:
-#    url: "jdbc:mysql://localhost/test_database"
-#    username: "test"
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#  jpa:
-#    hibernate:
-#      ddl-auto: create
-#    properties:
-#      hibernate:
-#        show_sql: true
-#        format_sql: true
-#        dialect: org.hibernate.dialect.MySQL8Dialect
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  mvc:
+    path match:
+      matching-strategy: ant_path_matcher
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: "jdbc:mysql://localhost/test_database"
+    username: "test"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
 #spring:
 #  config:
 #    activate:

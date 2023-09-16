@@ -3,6 +3,7 @@ package com.team.routineconnect.dto;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class RoutineRequest {
     private Boolean shared;
     private LocalDateTime createdDate;
     private LocalDateTime endedDate;
+    @Getter(AccessLevel.NONE)
     private EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
     public Routine toEntity(User user) {

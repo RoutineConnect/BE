@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
@@ -14,12 +15,14 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import static org.hibernate.annotations.CascadeType.ALL;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class Routine {
 
-    @OneToMany(mappedBy = "routine", orphanRemoval = true)
+    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL)
     private final List<DayOrder> dayOrderList = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,6 +60,10 @@ public class Routine {
 
     public Boolean isSetTo(Object o) {
         return repeatingDays.contains(o);
+    }
+
+    public Boolean isNotSetTo(Object o) {
+        return !repeatingDays.contains(o);
     }
 
     public void setRoutine(RoutineRequest request) {
