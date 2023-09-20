@@ -1,5 +1,6 @@
 package com.team.routineconnect.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
 import lombok.AccessLevel;
@@ -10,21 +11,18 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class Routine {
 
-    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL)
-    private final List<DayOrder> dayOrderList = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private Long id;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -1,9 +1,9 @@
 package com.team.routineconnect.repository;
 
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team.routineconnect.domain.Accomplishment;
+import com.team.routineconnect.domain.RoutineItem;
 import com.team.routineconnect.domain.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,7 +18,7 @@ import static com.team.routineconnect.domain.QDayOrder.dayOrder;
 
 @AllArgsConstructor
 @Repository
-public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
+public class RoutineItemRepositoryImpl implements RoutineItemRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
@@ -72,14 +72,13 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public List<Tuple> findRoutinesByUserAndDate(User user, LocalDate date) {
+    public List<RoutineItem> findRoutinesByUserAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
         Optional<LocalDate> maxDateOptional = findMaxDateByUserAndDayAndDateBefore(user, day, date);
 
         if (maxDateOptional.isPresent()) {
             return queryFactory
-                    .select(dayOrder.routine, dayOrder.position, dayOrder.accomplishment)
-                    .from(dayOrder)
+                    .selectFrom(dayOrder)
                     .where(dayOrder.day.eq(day)
                             .and(dayOrder.date.loe(date))
                             .and(dayOrder.user.eq(user)))
