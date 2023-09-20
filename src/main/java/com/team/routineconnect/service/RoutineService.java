@@ -7,7 +7,6 @@ import com.team.routineconnect.domain.RoutineItem;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
-import com.team.routineconnect.mapper.ResultMapper;
 import com.team.routineconnect.repository.RoutineItemRepository;
 import com.team.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
