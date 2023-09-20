@@ -33,8 +33,8 @@ public class RoutineRequest {
                 .hour(hour)
                 .repeatingDays(routineDayToEntityAttribute())
                 .shared(shared)
-                .createdDate(created_date.with(MIN))
-                .endedDate(ended_date != null ? ended_date.with(MIN) : null)
+                .createdDate(created_date)
+                .endedDate(ended_date)
                 .build();
     }
 

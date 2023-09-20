@@ -51,8 +51,8 @@ public class DayOrder {
         return this.position.equals(position);
     }
 
-    public void updatePosition(Float position) {
-        this.position = position;
+    public void updatePositionTo(Float newPosition) {
+        this.position = newPosition;
     }
 
     public void updateAchievement(Accomplishment accomplishment) {

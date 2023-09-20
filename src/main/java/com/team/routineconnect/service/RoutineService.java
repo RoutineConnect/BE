@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.team.routineconnect.domain.QDayOrder.dayOrder;
+
 @Transactional
 @RequiredArgsConstructor
 @Service
@@ -43,6 +45,7 @@ public class RoutineService {
         List<Tuple> results = dayOrderRepository.findRoutinesByUserAndDate(user, date);
 
         return results.stream()
+                .filter(tuple -> tuple.get(dayOrder.routine) != null)
                 .map(resultMapper::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -125,7 +128,7 @@ public class RoutineService {
 
             for (DayOrder dayOrder : dayOrders) {
                 if (dayOrder.positionIs(originalPosition)) {
-                    dayOrder.updatePosition(update.getPosition());
+                    dayOrder.updatePositionTo(update.getPosition());
                 }
             }
         }
@@ -184,7 +187,7 @@ public class RoutineService {
     }
 
     public void updateAfterDateDayOrder(User user, Routine routine, LocalDate date, DayOfWeek day) {
-        List<LocalDate> afterDates = dayOrderRepository.findDatesByUserAndDayAndDayGreaterThan(user, day, date);
+        List<LocalDate> afterDates = dayOrderRepository.findDatesByUserAndDayAndDateGreaterThan(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
             float position = dayOrderRepository.findMaxPositionByUserAndDate(user, dateTime).get() + 1;
@@ -249,7 +252,7 @@ public class RoutineService {
 
     void validate(Boolean condition) {
         if (!condition) {
-            throw new IllegalArgumentException("Invalid routine ID");
+            throw new IllegalArgumentException("Invalid Argument");
         }
     }
 

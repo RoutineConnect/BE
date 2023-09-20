@@ -61,7 +61,7 @@ public class DayOrderRepositoryImpl implements DayOrderRepositoryCustom {
     }
 
     @Override
-    public List<LocalDate> findDatesByUserAndDayAndDayGreaterThan(User user, DayOfWeek day, LocalDate date) {
+    public List<LocalDate> findDatesByUserAndDayAndDateGreaterThan(User user, DayOfWeek day, LocalDate date) {
         return queryFactory
                 .select(dayOrder.date)
                 .from(dayOrder)

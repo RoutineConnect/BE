@@ -12,7 +12,7 @@ public interface DayOrderRepositoryCustom {
     Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date);
     Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date);
     Optional<Float> findMaxPositionByUserAndDate(User user, LocalDate date);
-    List<LocalDate> findDatesByUserAndDayAndDayGreaterThan(User user, DayOfWeek day, LocalDate date);
+    List<LocalDate> findDatesByUserAndDayAndDateGreaterThan(User user, DayOfWeek day, LocalDate date);
     List<Tuple> findRoutinesByUserAndDate(User user, LocalDate date);
     Float findAchievementByUserAndDate(User user, LocalDate date);
 }
