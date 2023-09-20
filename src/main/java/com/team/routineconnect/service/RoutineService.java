@@ -2,8 +2,8 @@ package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Accomplishment;
-import com.team.routineconnect.domain.RoutineItem;
 import com.team.routineconnect.domain.Routine;
+import com.team.routineconnect.domain.RoutineItem;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
@@ -32,7 +32,6 @@ public class RoutineService {
     private final RoutineItemRepository routineItemRepository;
     private final UserService userService;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
-    private final ResultMapper resultMapper;
 
     public List<RoutineItem> findRoutinesByUserOnDate(Long userId, LocalDate date) {
         User user = userService.findById(userId)
@@ -44,7 +43,7 @@ public class RoutineService {
     public void setAccomplishment(Long userId, Long routineItemId, Accomplishment accomplishment) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-        RoutineItem routineItem=routineItemRepository.findById(routineItemId)
+        RoutineItem routineItem = routineItemRepository.findById(routineItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
 
         validate(user.equals(routineItem.getUser()));
