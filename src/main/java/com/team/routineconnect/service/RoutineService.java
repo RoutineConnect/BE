@@ -44,7 +44,6 @@ public class RoutineService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         RoutineItem routineItem = routineItemRepository.findById(routineItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
-
         validate(user.equals(routineItem.getUser()));
 
         routineItem.setAccomplishment(accomplishment);
@@ -75,7 +74,6 @@ public class RoutineService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
-
         validate(user.has(routine));
 
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
