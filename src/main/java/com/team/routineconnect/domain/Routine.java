@@ -1,33 +1,28 @@
 package com.team.routineconnect.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
-
-import static org.hibernate.annotations.CascadeType.ALL;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class Routine {
 
-    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL)
-    private final List<DayOrder> dayOrderList = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private Long id;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -67,11 +62,11 @@ public class Routine {
     }
 
     public void setRoutine(RoutineRequest request) {
-        this.title=request.getTitle();
-        this.hour=request.getHour();
-        this.repeatingDays=request.routineDayToEntityAttribute();
-        this.shared=request.getShared();
-        this.createdDate=request.getCreatedDate();
-        this.endedDate=request.getEndedDate();
+        this.title = request.getTitle();
+        this.hour = request.getHour();
+        this.repeatingDays = request.routineDayToEntityAttribute();
+        this.shared = request.getShared();
+        this.createdDate = request.getCreated_date();
+        this.endedDate = request.getEnded_date();
     }
 }

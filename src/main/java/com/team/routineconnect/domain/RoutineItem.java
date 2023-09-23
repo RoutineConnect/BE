@@ -1,5 +1,6 @@
 package com.team.routineconnect.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,13 +13,14 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class DayOrder {
+public class RoutineItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -27,9 +29,11 @@ public class DayOrder {
     @JoinColumn(name = "routine_id")
     private Routine routine;
 
+    @JsonIgnore
     @Column(nullable = false)
     private LocalDate date;
 
+    @JsonIgnore
     @Enumerated(EnumType.STRING)
     private DayOfWeek day;
 
@@ -39,7 +43,7 @@ public class DayOrder {
     private Accomplishment accomplishment;
 
     @Builder
-    public DayOrder(User user, Routine routine, LocalDate date, DayOfWeek day, Float position) {
+    public RoutineItem(User user, Routine routine, LocalDate date, DayOfWeek day, Float position) {
         this.user = user;
         this.routine = routine;
         this.date = date;
@@ -51,11 +55,11 @@ public class DayOrder {
         return this.position.equals(position);
     }
 
-    public void updatePosition(Float position) {
-        this.position = position;
+    public void updatePositionTo(Float newPosition) {
+        this.position = newPosition;
     }
 
-    public void updateAchievement(Accomplishment accomplishment) {
+    public void setAccomplishment(Accomplishment accomplishment) {
         this.accomplishment = accomplishment;
     }
 }

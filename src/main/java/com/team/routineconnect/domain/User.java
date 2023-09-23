@@ -23,8 +23,6 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private final List<Routine> routines = new ArrayList<>();
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private final List<Routine> dayOrders = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
