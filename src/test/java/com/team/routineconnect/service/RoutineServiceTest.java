@@ -1,12 +1,12 @@
 package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
-import com.team.routineconnect.domain.RoutineItem;
+import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
-import com.team.routineconnect.repository.RoutineItemRepository;
+import com.team.routineconnect.repository.ItemOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ public class RoutineServiceTest {
     @Autowired
     protected UserService userService;
     @Autowired
-    protected RoutineItemRepository routineItemRepository;
+    protected ItemOrderRepository itemOrderRepository;
     @Autowired
     protected EnumSetToBitmaskConverter enumSetToBitmaskConverter;
     private User user1;
@@ -43,7 +43,7 @@ public class RoutineServiceTest {
 
     @BeforeEach
     public void set() {
-        routineItemRepository.deleteAll();
+        itemOrderRepository.deleteAll();
         routineService.deleteAll();
         userService.deleteAll();
         this.user1 = userService.save(new User("홍길동", "@", null));
@@ -68,8 +68,8 @@ public class RoutineServiceTest {
         List<Routine> routines = routineService.findAll();
         assertThat(routines.size()).isEqualTo(1);
 
-        List<RoutineItem> routineItems = routineItemRepository.findAll();
-        assertThat(routineItems.size()).isEqualTo(7);
+        List<ItemOrder> itemOrders = itemOrderRepository.findAll();
+        assertThat(itemOrders.size()).isEqualTo(7);
     }
 
     //    updateBeforeDate if findMaxDateByUserAndDayAndDateLessThan exists
@@ -88,11 +88,11 @@ public class RoutineServiceTest {
         List<Routine> routines = routineService.findAll();
         assertThat(routines.size()).isEqualTo(2);
 
-        List<RoutineItem> allRoutineItems = routineItemRepository.findAll();
-        assertThat(allRoutineItems.size()).isEqualTo(14);
+        List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
+        assertThat(allItemOrders.size()).isEqualTo(14);
 
-        List<RoutineItem> routineItems = routineItemRepository.findByUserAndDate(user1, createdDate.toLocalDate());
-        assertThat(routineItems.size()).isEqualTo(2);
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDate(user1, createdDate.toLocalDate());
+        assertThat(itemOrders.size()).isEqualTo(2);
     }
 
     //    updateBeforeDate if findMaxDateByUserAndDayAndDateLessThan exists
@@ -112,14 +112,14 @@ public class RoutineServiceTest {
         List<Routine> routines = routineService.findAll();
         assertThat(routines.size()).isEqualTo(2);
 
-        List<RoutineItem> allRoutineItems = routineItemRepository.findAll();
-        assertThat(allRoutineItems.size()).isEqualTo(21);
+        List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
+        assertThat(allItemOrders.size()).isEqualTo(21);
 
-        List<RoutineItem> routineItem = routineItemRepository.findByUserAndDate(user1, createdDate.toLocalDate());
-        assertThat(routineItem.size()).isEqualTo(1);
+        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDate(user1, createdDate.toLocalDate());
+        assertThat(itemOrder.size()).isEqualTo(1);
 
-        List<RoutineItem> routineItems = routineItemRepository.findByUserAndDate(user1, laterRoutineDate.toLocalDate());
-        assertThat(routineItems.size()).isEqualTo(2);
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDate(user1, laterRoutineDate.toLocalDate());
+        assertThat(itemOrders.size()).isEqualTo(2);
     }
 
     @DisplayName("루틴 순서 변경 성공")
@@ -134,10 +134,10 @@ public class RoutineServiceTest {
 
         routineService.updateRoutineOrder(user1.getId(), createdDate.toLocalDate(), routineUpdate);
 
-        List<RoutineItem> routineItems = routineItemRepository
+        List<ItemOrder> itemOrders = itemOrderRepository
                 .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).toLocalDate());
-        assertThat(routineItems.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
-        assertThat(routineItems.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
+        assertThat(itemOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
+        assertThat(itemOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
     }
 
     //    removeBeforeDate if findMaxDateByUserAndDayAndDateBefore is same date
@@ -151,8 +151,8 @@ public class RoutineServiceTest {
 
         routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
-        List<RoutineItem> routineItems = routineItemRepository.findAll();
-        assertThat(routineItems.size()).isEqualTo(5);
+        List<ItemOrder> itemOrders = itemOrderRepository.findAll();
+        assertThat(itemOrders.size()).isEqualTo(5);
     }
 
     //    removeBeforeDate if findMaxDateByUserAndDayAndDateBefore is not same date
@@ -167,8 +167,8 @@ public class RoutineServiceTest {
 
         routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
-        List<RoutineItem> routineItems = routineItemRepository.findAll();
-        assertThat(routineItems.size()).isEqualTo(9);
+        List<ItemOrder> itemOrders = itemOrderRepository.findAll();
+        assertThat(itemOrders.size()).isEqualTo(9);
     }
 
     //    updateAfterDate if findDatesByUserAndDayAndDayAfter.isEmpty
@@ -182,8 +182,8 @@ public class RoutineServiceTest {
 
         routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
-        List<RoutineItem> routineItems = routineItemRepository.findAll();
-        assertThat(routineItems.size()).isEqualTo(7);
+        List<ItemOrder> itemOrders = itemOrderRepository.findAll();
+        assertThat(itemOrders.size()).isEqualTo(7);
     }
 
     //    updateAfterDate if findDatesByUserAndDayAndDayAfter exists
@@ -199,7 +199,7 @@ public class RoutineServiceTest {
         routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
         while (earlierRoutineDate.isBefore(createdDate)) {
-            assertThat(routineItemRepository
+            assertThat(itemOrderRepository
                     .findByUserAndDate(user1, earlierRoutineDate.toLocalDate())
                     .size()).isEqualTo(1);
             earlierRoutineDate = earlierRoutineDate.plusDays(1);
@@ -219,8 +219,8 @@ public class RoutineServiceTest {
 
         routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
-        List<RoutineItem> routineItems = routineItemRepository.findAll();
-        assertThat(routineItems.size()).isEqualTo(3);
+        List<ItemOrder> itemOrders = itemOrderRepository.findAll();
+        assertThat(itemOrders.size()).isEqualTo(3);
     }
 
     //    removeBeforeDate if findMaxDateByUserAndDayAndDateBefore is same date
@@ -239,8 +239,8 @@ public class RoutineServiceTest {
 
         routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
 
-        List<RoutineItem> routineItems = routineItemRepository.findAll();
-        assertThat(routineItems.size()).isEqualTo(10);
+        List<ItemOrder> itemOrders = itemOrderRepository.findAll();
+        assertThat(itemOrders.size()).isEqualTo(10);
     }
     //    removeBeforeDate if findMaxDateByUserAndDayAndDateBefore is not same date
     //    updateAfterDate if findDatesByUserAndDayAndDayAfter.isEmpty
@@ -257,10 +257,10 @@ public class RoutineServiceTest {
 
         routineService.updateRoutine(user1.getId(), routine.getId(), newRequest);
 
-        List<RoutineItem> routineItems = routineItemRepository.findByDateGreaterThanEqual(endedDate.toLocalDate());
-        for (RoutineItem routineItem : routineItems) {
-            assertThat(routineItem.getRoutine()).isNull();
+        List<ItemOrder> itemOrders = itemOrderRepository.findByDateGreaterThanEqual(endedDate.toLocalDate());
+        for (ItemOrder itemOrder : itemOrders) {
+            assertThat(itemOrder.getRoutine()).isNull();
         }
-        assertThat(routineItems.size()).isEqualTo(7);
+        assertThat(itemOrders.size()).isEqualTo(7);
     }
 }

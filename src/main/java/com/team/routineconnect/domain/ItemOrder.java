@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class RoutineItem {
+public class ItemOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +43,7 @@ public class RoutineItem {
     private Accomplishment accomplishment;
 
     @Builder
-    public RoutineItem(User user, Routine routine, LocalDate date, DayOfWeek day, Float position) {
+    public ItemOrder(User user, Routine routine, LocalDate date, DayOfWeek day, Float position) {
         this.user = user;
         this.routine = routine;
         this.date = date;

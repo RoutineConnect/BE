@@ -11,7 +11,7 @@ import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static com.team.routineconnect.domain.QDayOrder.dayOrder;
+import static com.team.routineconnect.domain.QItemOrder.itemOrder;
 
 @Component
 @Configurable
@@ -22,19 +22,19 @@ public class ResultMapper {
 
     public RoutineWithAccomplishment mapToDto(Tuple result) {
         EnumSet<DayOfWeek> enumSet = EnumSet.noneOf(DayOfWeek.class);
-        Set<DayOfWeek> repeatingDays = result.get(dayOrder.routine.repeatingDays);
+        Set<DayOfWeek> repeatingDays = result.get(itemOrder.routine.repeatingDays);
         enumSet.addAll(repeatingDays);
 
         return RoutineWithAccomplishment.builder()
-                .routine_id(result.get(dayOrder.routine.id))
-                .title(result.get(dayOrder.routine.title))
-                .hour(result.get(dayOrder.routine.hour))
+                .routine_id(result.get(itemOrder.routine.id))
+                .title(result.get(itemOrder.routine.title))
+                .hour(result.get(itemOrder.routine.hour))
                 .repeating_days(enumSetToBitmaskConverter.convertToDatabaseColumn(enumSet))
-                .shared(result.get(dayOrder.routine.shared))
-                .created_date(result.get(dayOrder.routine.createdDate))
-                .ended_date(result.get(dayOrder.routine.endedDate))
-                .position(result.get(dayOrder.position))
-                .accomplishment(result.get(dayOrder.accomplishment))
+                .shared(result.get(itemOrder.routine.shared))
+                .created_date(result.get(itemOrder.routine.createdDate))
+                .ended_date(result.get(itemOrder.routine.endedDate))
+                .position(result.get(itemOrder.position))
+                .accomplishment(result.get(itemOrder.accomplishment))
                 .build();
     }
 }

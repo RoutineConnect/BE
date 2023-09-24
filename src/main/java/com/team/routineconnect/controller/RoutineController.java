@@ -1,7 +1,7 @@
 package com.team.routineconnect.controller;
 
 import com.team.routineconnect.domain.Accomplishment;
-import com.team.routineconnect.domain.RoutineItem;
+import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.service.RoutineService;
@@ -22,9 +22,9 @@ public class RoutineController {
 
     // 메인페이지 (개인 루틴) 조회
     @GetMapping("/page/{date}")
-    public ResponseEntity<List<RoutineItem>> getMemberRoutinesOnDate(
+    public ResponseEntity<List<ItemOrder>> getMemberRoutinesOnDate(
             @PathVariable Long user_id, @PathVariable LocalDate date) {
-        List<RoutineItem> routines = routineService.findRoutinesByUserOnDate(user_id, date);
+        List<ItemOrder> routines = routineService.findRoutinesByUserOnDate(user_id, date);
         return ResponseEntity.ok(routines);
     }
 

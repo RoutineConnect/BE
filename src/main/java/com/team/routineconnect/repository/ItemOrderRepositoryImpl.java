@@ -3,7 +3,7 @@ package com.team.routineconnect.repository;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team.routineconnect.domain.Accomplishment;
-import com.team.routineconnect.domain.RoutineItem;
+import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -14,22 +14,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static com.team.routineconnect.domain.QDayOrder.dayOrder;
+import static com.team.routineconnect.domain.QItemOrder.itemOrder;
 
 @AllArgsConstructor
 @Repository
-public class RoutineItemRepositoryImpl implements RoutineItemRepositoryCustom {
+public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
     @Override
     public Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date) {
         LocalDate maxDate = queryFactory
-                .select(dayOrder.date.max())
-                .from(dayOrder)
-                .where(dayOrder.day.eq(day)
-                        .and(dayOrder.date.loe(date))
-                        .and(dayOrder.user.eq(user)))
+                .select(itemOrder.date.max())
+                .from(itemOrder)
+                .where(itemOrder.day.eq(day)
+                        .and(itemOrder.date.loe(date))
+                        .and(itemOrder.user.eq(user)))
                 .fetchOne();
 
         return Optional.ofNullable(maxDate);
@@ -38,11 +38,11 @@ public class RoutineItemRepositoryImpl implements RoutineItemRepositoryCustom {
     @Override
     public Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date) {
         LocalDate maxDate = queryFactory
-                .select(dayOrder.date.max())
-                .from(dayOrder)
-                .where(dayOrder.day.eq(day)
-                        .and(dayOrder.date.lt(date))
-                        .and(dayOrder.user.eq(user)))
+                .select(itemOrder.date.max())
+                .from(itemOrder)
+                .where(itemOrder.day.eq(day)
+                        .and(itemOrder.date.lt(date))
+                        .and(itemOrder.user.eq(user)))
                 .fetchOne();
 
         return Optional.ofNullable(maxDate);
@@ -51,10 +51,10 @@ public class RoutineItemRepositoryImpl implements RoutineItemRepositoryCustom {
     @Override
     public Optional<Float> findMaxPositionByUserAndDate(User user, LocalDate date) {
         Float maxPosition = queryFactory
-                .select(dayOrder.position.max())
-                .from(dayOrder)
-                .where(dayOrder.date.eq(date)
-                        .and(dayOrder.user.eq(user)))
+                .select(itemOrder.position.max())
+                .from(itemOrder)
+                .where(itemOrder.date.eq(date)
+                        .and(itemOrder.user.eq(user)))
                 .fetchOne();
 
         return Optional.ofNullable(maxPosition);
@@ -63,25 +63,25 @@ public class RoutineItemRepositoryImpl implements RoutineItemRepositoryCustom {
     @Override
     public List<LocalDate> findDatesByUserAndDayAndDateGreaterThan(User user, DayOfWeek day, LocalDate date) {
         return queryFactory
-                .select(dayOrder.date)
-                .from(dayOrder)
-                .where(dayOrder.day.eq(day)
-                        .and(dayOrder.date.gt(date))
-                        .and(dayOrder.user.eq(user)))
+                .select(itemOrder.date)
+                .from(itemOrder)
+                .where(itemOrder.day.eq(day)
+                        .and(itemOrder.date.gt(date))
+                        .and(itemOrder.user.eq(user)))
                 .fetch();
     }
 
     @Override
-    public List<RoutineItem> findRoutinesByUserAndDate(User user, LocalDate date) {
+    public List<ItemOrder> findRoutinesByUserAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
         Optional<LocalDate> maxDateOptional = findMaxDateByUserAndDayAndDateBefore(user, day, date);
 
         if (maxDateOptional.isPresent()) {
             return queryFactory
-                    .selectFrom(dayOrder)
-                    .where(dayOrder.day.eq(day)
-                            .and(dayOrder.date.loe(date))
-                            .and(dayOrder.user.eq(user)))
+                    .selectFrom(itemOrder)
+                    .where(itemOrder.day.eq(day)
+                            .and(itemOrder.date.loe(date))
+                            .and(itemOrder.user.eq(user)))
                     .fetch();
         } else {
             return Collections.emptyList();
@@ -93,8 +93,8 @@ public class RoutineItemRepositoryImpl implements RoutineItemRepositoryCustom {
         float totalRoutines = (float) findRoutinesByUserAndDate(user, date).size();
         float clearRoutines = (float) queryFactory
                 .select(Wildcard.count)
-                .from(dayOrder)
-                .where(dayOrder.accomplishment.eq(Accomplishment.CLEAR))
+                .from(itemOrder)
+                .where(itemOrder.accomplishment.eq(Accomplishment.CLEAR))
                 .fetch().get(0);
 
         return totalRoutines != 0 ? clearRoutines / totalRoutines * 100 : 0;
