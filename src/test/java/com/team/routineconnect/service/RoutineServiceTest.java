@@ -62,7 +62,7 @@ public class RoutineServiceTest {
     public void 루틴추가Test() throws Exception {
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
 
-        routineService.addRoutine(user1.getId(), request);
+        routineService.addRoutine(user1, request);
 
         // Then
         List<Routine> routines = routineService.findAll();
@@ -81,8 +81,8 @@ public class RoutineServiceTest {
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
 
-        routineService.addRoutine(user1.getId(), request1);
-        routineService.addRoutine(user1.getId(), request2);
+        routineService.addRoutine(user1, request1);
+        routineService.addRoutine(user1, request2);
 
         // Then
         List<Routine> routines = routineService.findAll();
@@ -105,8 +105,8 @@ public class RoutineServiceTest {
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter);
 
-        routineService.addRoutine(user1.getId(), request1);
-        routineService.addRoutine(user1.getId(), request2);
+        routineService.addRoutine(user1, request1);
+        routineService.addRoutine(user1, request2);
 
         // Then
         List<Routine> routines = routineService.findAll();
@@ -128,11 +128,11 @@ public class RoutineServiceTest {
         final Float position = 0.5f;
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        Routine routine1 = routineService.addRoutine(user1.getId(), request1);
-        Routine routine2 = routineService.addRoutine(user1.getId(), request2);
+        Routine routine1 = routineService.addRoutine(user1, request1);
+        Routine routine2 = routineService.addRoutine(user1, request2);
         List<RoutineUpdate> routineUpdate = new ArrayList<>(List.of(new RoutineUpdate(routine2.getId(), position)));
 
-        routineService.updateRoutineOrder(user1.getId(), createdDate.toLocalDate(), routineUpdate);
+        routineService.updateRoutineOrder(user1, createdDate.toLocalDate(), routineUpdate);
 
         List<ItemOrder> itemOrders = itemOrderRepository
                 .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).toLocalDate());
@@ -147,9 +147,9 @@ public class RoutineServiceTest {
         final Byte newRoutineDay = 0b111110;
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        final Routine routine1 = routineService.addRoutine(user1.getId(), request);
+        final Routine routine1 = routineService.addRoutine(user1, request);
 
-        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findAll();
         assertThat(itemOrders.size()).isEqualTo(5);
@@ -163,9 +163,9 @@ public class RoutineServiceTest {
         final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter);
-        final Routine routine1 = routineService.addRoutine(user1.getId(), request);
+        final Routine routine1 = routineService.addRoutine(user1, request);
 
-        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findAll();
         assertThat(itemOrders.size()).isEqualTo(9);
@@ -178,9 +178,9 @@ public class RoutineServiceTest {
         final Byte newRoutineDay = 0b111110;
         final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        final Routine routine1 = routineService.addRoutine(user1.getId(), request);
+        final Routine routine1 = routineService.addRoutine(user1, request);
 
-        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findAll();
         assertThat(itemOrders.size()).isEqualTo(7);
@@ -194,9 +194,9 @@ public class RoutineServiceTest {
         LocalDateTime earlierRoutineDate = createdDate.minusDays(7);
         final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, earlierRoutineDate, endedDate, enumSetToBitmaskConverter);
-        final Routine routine1 = routineService.addRoutine(user1.getId(), request);
+        final Routine routine1 = routineService.addRoutine(user1, request);
 
-        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         while (earlierRoutineDate.isBefore(createdDate)) {
             assertThat(itemOrderRepository
@@ -215,9 +215,9 @@ public class RoutineServiceTest {
         final Byte newRoutineDay = 0b101010;
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        final Routine routine1 = routineService.addRoutine(user1.getId(), request);
+        final Routine routine1 = routineService.addRoutine(user1, request);
 
-        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findAll();
         assertThat(itemOrders.size()).isEqualTo(3);
@@ -234,10 +234,10 @@ public class RoutineServiceTest {
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, (byte) 0b11111110, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        final Routine routine1 = routineService.addRoutine(user1.getId(), request1);
-        routineService.addRoutine(user1.getId(), request2);
+        final Routine routine1 = routineService.addRoutine(user1, request1);
+        routineService.addRoutine(user1, request2);
 
-        routineService.updateRoutine(user1.getId(), routine1.getId(), newRequest);
+        routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findAll();
         assertThat(itemOrders.size()).isEqualTo(10);
@@ -251,11 +251,11 @@ public class RoutineServiceTest {
     @Test
     public void 루틴종료Test() throws Exception {
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter);
-        Routine routine = routineService.addRoutine(user1.getId(), request);
+        Routine routine = routineService.addRoutine(user1, request);
         endedDate = createdDate.plusDays(7);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, endedDate, endedDate, enumSetToBitmaskConverter);
 
-        routineService.updateRoutine(user1.getId(), routine.getId(), newRequest);
+        routineService.updateRoutine(user1, routine.getId(), newRequest);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findByDateGreaterThanEqual(endedDate.toLocalDate());
         for (ItemOrder itemOrder : itemOrders) {
