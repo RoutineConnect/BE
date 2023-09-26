@@ -2,8 +2,8 @@ package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Accomplishment;
-import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.ItemOrder;
+import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
@@ -29,19 +29,13 @@ public class RoutineService {
 
     private final RoutineRepository routineRepository;
     private final ItemOrderRepository itemOrderRepository;
-    private final UserService userService;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
-    public List<ItemOrder> findRoutinesByUserOnDate(Long userId, LocalDate date) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-
+    public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
         return itemOrderRepository.findRoutinesByUserAndDate(user, date);
     }
 
-    public void setAccomplishment(Long userId, Long routineItemId, Accomplishment accomplishment) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    public void setAccomplishment(User user, Long routineItemId, Accomplishment accomplishment) {
         ItemOrder itemOrder = itemOrderRepository.findById(routineItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
         validate(user.equals(itemOrder.getUser()));
@@ -49,9 +43,7 @@ public class RoutineService {
         itemOrder.setAccomplishment(accomplishment);
     }
 
-    public Routine addRoutine(Long userId, RoutineRequest request) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    public Routine addRoutine(User user, RoutineRequest request) {
         LocalDate currentDate = request.getCreated_date().toLocalDate();
         LocalDate lastDate = currentDate.plusDays(7);
 
@@ -69,12 +61,10 @@ public class RoutineService {
         return routine;
     }
 
-    public void updateRoutine(Long userId, Long routineId, RoutineRequest request) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    public void updateRoutine(User user, Long routineId, RoutineRequest request) {
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid routine ID"));
-        validate(user.has(routine));
+        validate(routine.userIs(user));
 
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
         Byte bitsToModify = (byte) (originalDays ^ request.getRoutine_day());
@@ -111,14 +101,19 @@ public class RoutineService {
         routine.setRoutine(request);
     }
 
-    public void updateRoutineOrder(Long userId, LocalDate date, List<RoutineUpdate> routineUpdates) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-
+    /**
+     * 해당 일자 아이템 목록만 수정하는 것이 아닌 position이 같은 아이템 목록 전체를 수정하기 때문에 ItemOrder가 아니라 Item의 id를
+     * 기준으로 position을 update함.
+     *
+     * @param user
+     * @param date
+     * @param routineUpdates Item id와 update할 position이 담긴 요청 DTO List
+     */
+    public void updateRoutineOrder(User user, LocalDate date, List<RoutineUpdate> routineUpdates) {
         for (RoutineUpdate update : routineUpdates) {
             Routine routine = routineRepository.findById(update.getRoutine_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
-            validate(user.has(routine));
+            validate(routine.userIs(user));
 
             List<ItemOrder> itemOrders = itemOrderRepository
                     .findByRoutineAndDateAfterOrderByDate(routine, date);
@@ -132,9 +127,7 @@ public class RoutineService {
         }
     }
 
-    public List<Float> getAchievementsForWeek(Long userId, LocalDate date) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    public List<Float> getAchievementsForWeek(User user, LocalDate date) {
         LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endDate = startDate.plusDays(7);
         List<Float> achievements = new ArrayList<>();

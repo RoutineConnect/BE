@@ -61,6 +61,10 @@ public class Routine {
         return !repeatingDays.contains(o);
     }
 
+    public Boolean userIs(User user) {
+        return this.user == user;
+    }
+
     public void setRoutine(RoutineRequest request) {
         this.title = request.getTitle();
         this.hour = request.getHour();
