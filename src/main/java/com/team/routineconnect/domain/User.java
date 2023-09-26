@@ -21,9 +21,6 @@ import java.util.stream.Collectors;
 @Entity
 public class User implements UserDetails {
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private final List<Routine> routines = new ArrayList<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
@@ -51,10 +48,6 @@ public class User implements UserDetails {
         this.name = name;
         this.email = email;
         this.profileImageUrl = (profileImageUrl != null) ? profileImageUrl : null;
-    }
-
-    public Boolean has(Routine routine) {
-        return this.routines.contains(routine);
     }
 
     @Override
