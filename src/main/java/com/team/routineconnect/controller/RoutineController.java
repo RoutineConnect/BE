@@ -85,6 +85,6 @@ public class RoutineController {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgumentException() {
-        return "/error";
+        return "redirect:/error";
     }
 }
