@@ -1,12 +1,10 @@
 package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
-import com.team.routineconnect.domain.Accomplishment;
-import com.team.routineconnect.domain.ItemOrder;
-import com.team.routineconnect.domain.Routine;
-import com.team.routineconnect.domain.User;
+import com.team.routineconnect.domain.*;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
+import com.team.routineconnect.repository.HourRepository;
 import com.team.routineconnect.repository.ItemOrderRepository;
 import com.team.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +15,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Transactional
 @RequiredArgsConstructor
@@ -37,7 +32,7 @@ public class RoutineService {
 
     public void setAccomplishment(User user, Long routineItemId, Accomplishment accomplishment) {
         ItemOrder itemOrder = itemOrderRepository.findById(routineItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid item order ID"));
         validate(user.equals(itemOrder.getUser()));
 
         itemOrder.setAccomplishment(accomplishment);
@@ -58,6 +53,8 @@ public class RoutineService {
             }
             currentDate = currentDate.plusDays(1);
         }
+
+
         return routine;
     }
 
@@ -105,8 +102,8 @@ public class RoutineService {
      * 해당 일자 아이템 목록만 수정하는 것이 아닌 position이 같은 아이템 목록 전체를 수정하기 때문에 ItemOrder가 아니라 Item의 id를
      * 기준으로 position을 update함.
      *
-     * @param user
-     * @param date
+     * @param user @AuthenticationPrincipal로 가져온, 현재 요청한 User
+     * @param date Item position을 update할 일자
      * @param routineUpdates Item id와 update할 position이 담긴 요청 DTO List
      */
     public void updateRoutineOrder(User user, LocalDate date, List<RoutineUpdate> routineUpdates) {
