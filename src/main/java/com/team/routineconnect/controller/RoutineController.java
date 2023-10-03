@@ -1,6 +1,7 @@
 package com.team.routineconnect.controller;
 
 import com.team.routineconnect.domain.Accomplishment;
+import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @RestController
@@ -75,8 +77,14 @@ public class RoutineController {
         return ResponseEntity.ok(achievements);
     }
 
+    @GetMapping("/hour")
+    public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal User user) {
+        Set<Hour> hours = user.getHours();
+        return ResponseEntity.ok(hours);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgumentException() {
-        return "/error";
+        return "redirect:/error";
     }
 }

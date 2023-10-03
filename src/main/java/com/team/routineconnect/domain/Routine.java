@@ -3,10 +3,7 @@ package com.team.routineconnect.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
@@ -14,10 +11,15 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Getter
 @Entity
 public class Routine {
 
+    @OneToOne
+    @JoinColumn(name = "hour_id")
+    private Hour hour;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
@@ -30,8 +32,6 @@ public class Routine {
 //    ________ 0 or 1
     @Column(nullable = false)
     private String title;
-    @Column
-    private String hour;
     @Convert(converter = EnumSetToBitmaskConverter.class)
     @Column(nullable = false)
     private EnumSet<DayOfWeek> repeatingDays;
@@ -41,17 +41,6 @@ public class Routine {
     private LocalDateTime createdDate;
     @Column
     private LocalDateTime endedDate;
-
-    @Builder
-    public Routine(User user, String title, String hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared, LocalDateTime createdDate, LocalDateTime endedDate) {
-        this.user = user;
-        this.title = title;
-        this.hour = hour;
-        this.repeatingDays = repeatingDays;
-        this.shared = shared;
-        this.createdDate = createdDate;
-        this.endedDate = endedDate;
-    }
 
     public Boolean isSetTo(Object o) {
         return repeatingDays.contains(o);
