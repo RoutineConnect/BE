@@ -1,17 +1,13 @@
 package com.team.routineconnect.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team.routineconnect.config.security.SecurityConfiguration;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.service.RoutineService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
