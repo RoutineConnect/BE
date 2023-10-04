@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +46,8 @@ public class RoutineController {
 
     // 루틴 추가
     @PostMapping("/routine")
-    public ResponseEntity<Void> addRoutine(@AuthenticationPrincipal User user, @RequestBody RoutineRequest request) {
+    public ResponseEntity<Void> addRoutine(
+            @AuthenticationPrincipal User user, @Valid @RequestBody RoutineRequest request) {
         routineService.addRoutine(user, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -54,7 +57,7 @@ public class RoutineController {
     public ResponseEntity<Void> updateRoutine(
             @AuthenticationPrincipal User user,
             @RequestParam Long routine_id,
-            @RequestBody RoutineRequest request) {
+            @Valid @RequestBody RoutineRequest request) {
         routineService.updateRoutine(user, routine_id, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -64,7 +67,7 @@ public class RoutineController {
     public ResponseEntity<Void> updateRoutineOrder(
             @AuthenticationPrincipal User user,
             @PathVariable LocalDate date,
-            @RequestBody List<RoutineUpdate> routineUpdates) {
+            @Valid @RequestBody List<RoutineUpdate> routineUpdates) {
         routineService.updateRoutineOrder(user, date, routineUpdates);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -86,5 +89,10 @@ public class RoutineController {
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgumentException() {
         return "redirect:/error";
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public void handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        MethodArgumentNotValidException error = e;
     }
 }

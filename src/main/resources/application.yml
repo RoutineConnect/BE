@@ -7,9 +7,6 @@ spring:
   mvc:
     path match:
       matching-strategy: ant_path_matcher
-  config:
-    activate:
-      on-profile: test
   datasource:
     url: "jdbc:mysql://localhost/test_database"
     username: "test"
@@ -26,6 +23,10 @@ spring:
   jackson:
     serialization:
       fail-on-empty-beans: false
+
+springboot:
+  jwt:
+    secret: flature!@#
 
 #spring:
 #  config:
