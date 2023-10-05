@@ -4,7 +4,6 @@ import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.*;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
-import com.team.routineconnect.repository.HourRepository;
 import com.team.routineconnect.repository.ItemOrderRepository;
 import com.team.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ public class RoutineService {
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
     public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
-        return itemOrderRepository.findRoutinesByUserAndDate(user, date);
+        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date);
     }
 
     public void setAccomplishment(User user, Long routineItemId, Accomplishment accomplishment) {

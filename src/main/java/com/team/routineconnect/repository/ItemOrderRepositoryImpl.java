@@ -72,7 +72,7 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public List<ItemOrder> findRoutinesByUserAndDate(User user, LocalDate date) {
+    public List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
         Optional<LocalDate> maxDateOptional = findMaxDateByUserAndDayAndDateBefore(user, day, date);
 
@@ -81,7 +81,8 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
                     .selectFrom(itemOrder)
                     .where(itemOrder.day.eq(day)
                             .and(itemOrder.date.loe(date))
-                            .and(itemOrder.user.eq(user)))
+                            .and(itemOrder.user.eq(user))
+                            .and(itemOrder.routine.isNotNull()))
                     .fetch();
         } else {
             return Collections.emptyList();
@@ -90,7 +91,7 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
 
     @Override
     public Float findAchievementByUserAndDate(User user, LocalDate date) {
-        float totalRoutines = (float) findRoutinesByUserAndDate(user, date).size();
+        float totalRoutines = (float) findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date).size();
         float clearRoutines = (float) queryFactory
                 .select(Wildcard.count)
                 .from(itemOrder)
