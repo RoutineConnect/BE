@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface ItemOrderRepository extends JpaRepository<ItemOrder, Long>, ItemOrderRepositoryCustom {
-    List<ItemOrder> findByUserAndDate(User user, LocalDate date);
+    List<ItemOrder> findByUserAndDateAndRoutineIsNotNull(User user, LocalDate date);
 
     List<ItemOrder> findByUserAndRoutineAndDayAndDateLessThanEqual(User user, Routine routine, DayOfWeek day, LocalDate date);
 

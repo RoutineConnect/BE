@@ -3,6 +3,7 @@ package com.team.routineconnect.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
+import com.team.routineconnect.repository.HourRepository;
 import lombok.*;
 
 import javax.persistence.*;
@@ -54,10 +55,11 @@ public class Routine {
         return this.user == user;
     }
 
-    public void setRoutine(RoutineRequest request) {
+    public void setRoutine(RoutineRequest request,
+                           EnumSetToBitmaskConverter enumSetToBitmaskConverter, HourRepository hourRepository) {
         this.title = request.getTitle();
-        this.hour = request.getHour();
-        this.repeatingDays = request.routineDayToEntityAttribute();
+        this.hour = request.getHour().toEntity(hourRepository);
+        this.repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         this.shared = request.getShared();
         this.createdDate = request.getCreated_date();
         this.endedDate = request.getEnded_date();

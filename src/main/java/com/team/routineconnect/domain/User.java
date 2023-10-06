@@ -45,10 +45,11 @@ public class User implements UserDetails {
     private List<String> roles = new ArrayList<>();
 
     @Builder
-    public User(String name, String email, String profile) {
+    public User(String name, String email, String password, String profileImageUrl) {
         this.name = name;
         this.email = email;
-        this.profileImageUrl = (profileImageUrl != null) ? profileImageUrl : null;
+        this.password = password;
+        this.profileImageUrl = profileImageUrl;
     }
 
     @Override

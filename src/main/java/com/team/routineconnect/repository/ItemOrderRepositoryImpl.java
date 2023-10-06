@@ -61,7 +61,7 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public List<LocalDate> findDatesByUserAndDayAndDateGreaterThan(User user, DayOfWeek day, LocalDate date) {
+    public List<LocalDate> findDatesByUserAndDayAndDateAfter(User user, DayOfWeek day, LocalDate date) {
         return queryFactory
                 .select(itemOrder.date)
                 .from(itemOrder)
