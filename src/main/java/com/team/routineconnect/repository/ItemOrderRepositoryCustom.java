@@ -13,6 +13,6 @@ public interface ItemOrderRepositoryCustom {
     Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date);
     Optional<Float> findMaxPositionByUserAndDate(User user, LocalDate date);
     List<LocalDate> findDatesByUserAndDayAndDateGreaterThan(User user, DayOfWeek day, LocalDate date);
-    List<ItemOrder> findRoutinesByUserAndDate(User user, LocalDate date);
+    List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(User user, LocalDate date);
     Float findAchievementByUserAndDate(User user, LocalDate date);
 }

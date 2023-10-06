@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Entity
 public class User implements UserDetails {
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private Set<Hour> hours = new HashSet<>();
 
     @Id
