@@ -1,5 +1,6 @@
 package com.team.routineconnect.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.*;
 import com.team.routineconnect.dto.RoutineRequest;
@@ -26,6 +27,7 @@ public class RoutineService {
     private final ItemOrderRepository itemOrderRepository;
     private final HourRepository hourRepository;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
+    private final ObjectMapper objectMapper;
 
     public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
         return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date);
@@ -44,7 +46,7 @@ public class RoutineService {
         LocalDate lastDate = currentDate.plusDays(7);
 
         Routine routine = routineRepository.save(
-                request.toEntity(user, enumSetToBitmaskConverter, hourRepository));
+                request.toEntity(user, enumSetToBitmaskConverter, objectMapper, hourRepository));
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -97,7 +99,7 @@ public class RoutineService {
             currentDate = currentDate.plusDays(1);
         }
 
-        routine.setRoutine(request, enumSetToBitmaskConverter, hourRepository);
+        routine.setRoutine(request, enumSetToBitmaskConverter, objectMapper);
     }
 
     /**

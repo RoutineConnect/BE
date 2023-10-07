@@ -1,6 +1,7 @@
 package com.team.routineconnect.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.repository.HourRepository;
@@ -56,9 +57,9 @@ public class Routine {
     }
 
     public void setRoutine(RoutineRequest request,
-                           EnumSetToBitmaskConverter enumSetToBitmaskConverter, HourRepository hourRepository) {
+                           EnumSetToBitmaskConverter enumSetToBitmaskConverter, ObjectMapper objectMapper) {
         this.title = request.getTitle();
-        this.hour = request.getHour().toEntity(hourRepository);
+        this.hour = request.getHour().toEntity(objectMapper);
         this.repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         this.shared = request.getShared();
         this.createdDate = request.getCreated_date();

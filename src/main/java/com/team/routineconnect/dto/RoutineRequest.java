@@ -1,5 +1,6 @@
 package com.team.routineconnect.dto;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.Routine;
@@ -12,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
+import java.util.Optional;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,12 +35,21 @@ public class RoutineRequest {
     @Getter(AccessLevel.NONE)
     private HourRepository hourRepository;
 
-    public Routine toEntity(User user
-            , EnumSetToBitmaskConverter enumSetToBitmaskConverter, HourRepository hourRepository) {
-        Hour hour = this.hour.toEntity(hourRepository);
+    public Routine toEntity(
+            User user
+            , EnumSetToBitmaskConverter enumSetToBitmaskConverter,
+            ObjectMapper objectMapper,
+            HourRepository hourRepository
+    ) {
+        Hour hour = this.hour.toEntity(objectMapper);
         if (hour.getId() == null) {
             hour.setUser(user);
             hour = hourRepository.save(hour);
+        } else {
+            Optional<Hour> hourOptional = hourRepository.findById(hour.getId());
+            if (hourOptional.isEmpty() || !user.equals(hourOptional.get().getUser())) {
+                throw new IllegalArgumentException("Invalid hour ID");
+            }
         }
 
         return Routine.builder()

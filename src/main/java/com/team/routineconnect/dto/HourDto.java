@@ -2,8 +2,10 @@ package com.team.routineconnect.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.domain.Hour;
-import com.team.routineconnect.repository.HourRepository;
+
+import java.util.LinkedHashMap;
 
 public class HourDto {
     private final Object hour;
@@ -18,16 +20,19 @@ public class HourDto {
         return hour;
     }
 
-    public Hour toEntity(HourRepository hourRepository) {
+    public Hour toEntity(ObjectMapper objectMapper) {
         Hour hour = null;
         if (this.hour != null) {
             if (this.hour instanceof String) {
                 hour = Hour.builder()
                         .hour(this.hour.toString())
                         .build();
-            } else if (this.hour instanceof Hour) {
-                hour = hourRepository.findById(((Hour) this.hour).getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Illegal hour ID"));
+            } else if (this.hour instanceof LinkedHashMap) {
+                try {
+                    hour = objectMapper.convertValue(this.hour, Hour.class);
+                } catch (Exception e) {
+                    throw e;
+                }
             } else {
                 throw new IllegalArgumentException("Illegal hourDto type");
             }
