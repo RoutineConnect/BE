@@ -21,15 +21,14 @@ public class HourDto {
     }
 
     public Hour toEntity(ObjectMapper objectMapper) {
-        Hour hour = null;
-        if (this.hour != null) {
-            if (this.hour instanceof String) {
-                hour = Hour.builder()
-                        .hour(this.hour.toString())
+        if (hour != null) {
+            if (hour instanceof String) {
+                return Hour.builder()
+                        .hour(hour.toString())
                         .build();
-            } else if (this.hour instanceof LinkedHashMap) {
+            } else if (hour instanceof LinkedHashMap) {
                 try {
-                    hour = objectMapper.convertValue(this.hour, Hour.class);
+                    return objectMapper.convertValue(hour, Hour.class);
                 } catch (Exception e) {
                     throw e;
                 }
@@ -38,6 +37,6 @@ public class HourDto {
             }
         }
 
-        return hour;
+        return null;
     }
 }
