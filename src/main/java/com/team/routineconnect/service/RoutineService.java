@@ -1,9 +1,11 @@
 package com.team.routineconnect.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.*;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
+import com.team.routineconnect.repository.HourRepository;
 import com.team.routineconnect.repository.ItemOrderRepository;
 import com.team.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,9 @@ public class RoutineService {
 
     private final RoutineRepository routineRepository;
     private final ItemOrderRepository itemOrderRepository;
+    private final HourRepository hourRepository;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
+    private final ObjectMapper objectMapper;
 
     public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
         return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date);
@@ -41,7 +45,8 @@ public class RoutineService {
         LocalDate currentDate = request.getCreated_date().toLocalDate();
         LocalDate lastDate = currentDate.plusDays(7);
 
-        Routine routine = routineRepository.save(request.toEntity(user));
+        Routine routine = routineRepository.save(
+                request.toEntity(user, enumSetToBitmaskConverter, objectMapper, hourRepository));
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -52,7 +57,6 @@ public class RoutineService {
             }
             currentDate = currentDate.plusDays(1);
         }
-
 
         return routine;
     }
@@ -65,7 +69,7 @@ public class RoutineService {
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
         Byte bitsToModify = (byte) (originalDays ^ request.getRoutine_day());
         EnumSet<DayOfWeek> daysToModify = enumSetToBitmaskConverter.convertToEntityAttribute(bitsToModify);
-        EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute();
+        EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         LocalDate currentDate = request.getCreated_date().toLocalDate();
         LocalDate lastDate = currentDate.plusDays(7);
         Optional<LocalDateTime> endDate = Optional.ofNullable(request.getEnded_date());
@@ -75,6 +79,7 @@ public class RoutineService {
             List<ItemOrder> itemOrders = itemOrderRepository
                     .findByUserAndRoutineAndDayAndDateLessThanEqual(user, routine, day, currentDate);
 
+//            생성일을 이전 날짜로 수정? 마이루틴은 이후로만 바꿀 수 있음
             if (routine.isSetTo(day) && itemOrders.isEmpty()) {
                 updateTodayItemOrder(user, routine, currentDate, day);
             } else if (daysToModify.contains(day) && routine.isSetTo(day)) {
@@ -94,7 +99,7 @@ public class RoutineService {
             currentDate = currentDate.plusDays(1);
         }
 
-        routine.setRoutine(request);
+        routine.setRoutine(request, enumSetToBitmaskConverter, objectMapper);
     }
 
     /**
@@ -144,7 +149,7 @@ public class RoutineService {
         if (lastDateOptional.isPresent()) {
             LocalDate latestDate = lastDateOptional.get();
 //                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
-            List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDate(user, latestDate);
+            List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user, latestDate);
             for (ItemOrder itemOrder : itemOrders) {
                 ItemOrder newItemOrder = ItemOrder.builder()
                         .user(user)
@@ -174,7 +179,7 @@ public class RoutineService {
     }
 
     public void updateAfterDateItemOrder(User user, Routine routine, LocalDate date, DayOfWeek day) {
-        List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateGreaterThan(user, day, date);
+        List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateAfter(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
             float position = itemOrderRepository.findMaxPositionByUserAndDate(user, dateTime).get() + 1;

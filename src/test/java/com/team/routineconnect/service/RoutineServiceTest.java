@@ -5,6 +5,7 @@ import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.HourDto;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.repository.HourRepository;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @ActiveProfiles("test")
 @SpringBootTest
 public class RoutineServiceTest {
@@ -38,7 +41,7 @@ public class RoutineServiceTest {
     protected HourRepository hourRepository;
     private User user1;
     private Byte routineDay;
-    private Hour hour;
+    private HourDto hour;
     private Boolean shared;
     private LocalDateTime createdDate;
     private LocalDateTime endedDate;
@@ -47,12 +50,9 @@ public class RoutineServiceTest {
 
     @BeforeEach
     public void set() {
-        itemOrderRepository.deleteAll();
-        routineService.deleteAll();
-        userService.deleteAll();
-        this.user1 = userService.save(new User("홍길동", "@", null));
+        this.user1 = userService.save(new User("홍길동", "@", "passwd", null));
         this.routineDay = (byte) 0b11111110;
-        this.hour = new Hour(null,null,"hour");
+        this.hour = new HourDto("hour");
         this.shared = false;
         this.createdDate = LocalDateTime.parse("2023-08-22T22:55:00");
         this.endedDate = null;
@@ -65,7 +65,7 @@ public class RoutineServiceTest {
     @Test
     public void 루틴추가Test() throws Exception {
         final RoutineRequest request = new RoutineRequest(
-                title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+                title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
 
         routineService.addRoutine(user1, request);
 
@@ -83,8 +83,8 @@ public class RoutineServiceTest {
     @Test
     public void 이미루틴이있을때새루틴추가Test() throws Exception {
 
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, hourRepository);
 
         routineService.addRoutine(user1, request1);
         routineService.addRoutine(user1, request2);
@@ -96,7 +96,7 @@ public class RoutineServiceTest {
         List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
         assertThat(allItemOrders.size()).isEqualTo(14);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDate(user1, createdDate.toLocalDate());
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, createdDate.toLocalDate());
         assertThat(itemOrders.size()).isEqualTo(2);
     }
 
@@ -107,8 +107,8 @@ public class RoutineServiceTest {
     public void 이미루틴이있을때일주일뒤새루틴추가Test() throws Exception {
 
         final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate, hourRepository);
 
         routineService.addRoutine(user1, request1);
         routineService.addRoutine(user1, request2);
@@ -120,10 +120,10 @@ public class RoutineServiceTest {
         List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
         assertThat(allItemOrders.size()).isEqualTo(21);
 
-        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDate(user1, createdDate.toLocalDate());
+        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, createdDate.toLocalDate());
         assertThat(itemOrder.size()).isEqualTo(1);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDate(user1, laterRoutineDate.toLocalDate());
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, laterRoutineDate.toLocalDate());
         assertThat(itemOrders.size()).isEqualTo(2);
     }
 
@@ -131,8 +131,8 @@ public class RoutineServiceTest {
     @Test
     public void 루틴순서변경Test() throws Exception {
         final Float position = 0.5f;
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         Routine routine1 = routineService.addRoutine(user1, request1);
         Routine routine2 = routineService.addRoutine(user1, request2);
         List<RoutineUpdate> routineUpdate = new ArrayList<>(List.of(new RoutineUpdate(routine2.getId(), position)));
@@ -150,8 +150,8 @@ public class RoutineServiceTest {
     @Test
     public void 바로루틴요일제외Test() throws Exception {
         final Byte newRoutineDay = 0b111110;
-        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
         final Routine routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
@@ -166,8 +166,8 @@ public class RoutineServiceTest {
     public void 일주일뒤루틴요일제외변경Test() throws Exception {
         final Byte newRoutineDay = 0b111110;
         final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
-        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, laterRoutineDate, endedDate, hourRepository);
         final Routine routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
@@ -181,8 +181,8 @@ public class RoutineServiceTest {
     @Test
     public void 바로루틴요일추가Test() throws Exception {
         final Byte newRoutineDay = 0b111110;
-        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final Routine routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
@@ -197,15 +197,15 @@ public class RoutineServiceTest {
     public void 일주일전루틴요일추가Test() throws Exception {
         final Byte newRoutineDay = 0b111110;
         LocalDateTime earlierRoutineDate = createdDate.minusDays(7);
-        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, earlierRoutineDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, earlierRoutineDate, endedDate, hourRepository);
         final Routine routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         while (earlierRoutineDate.isBefore(createdDate)) {
             assertThat(itemOrderRepository
-                    .findByUserAndDate(user1, earlierRoutineDate.toLocalDate())
+                    .findByUserAndDateAndRoutineIsNotNull(user1, earlierRoutineDate.toLocalDate())
                     .size()).isEqualTo(1);
             earlierRoutineDate = earlierRoutineDate.plusDays(1);
         }
@@ -218,8 +218,8 @@ public class RoutineServiceTest {
     public void 바로루틴요일동시추가제외Test() throws Exception {
         routineDay = 0b1010100;
         final Byte newRoutineDay = 0b101010;
-        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
         final Routine routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
@@ -236,9 +236,9 @@ public class RoutineServiceTest {
         routineDay = 0b1010100;
         final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
         final Byte newRoutineDay = 0b101010;
-        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest request2 = new RoutineRequest(title2, hour, (byte) 0b11111110, shared, laterRoutineDate, endedDate, enumSetToBitmaskConverter, hourRepository);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, (byte) 0b11111110, shared, laterRoutineDate, endedDate, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
         final Routine routine1 = routineService.addRoutine(user1, request1);
         routineService.addRoutine(user1, request2);
 
@@ -255,10 +255,10 @@ public class RoutineServiceTest {
     @DisplayName("루틴 종료")
     @Test
     public void 루틴종료Test() throws Exception {
-        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         Routine routine = routineService.addRoutine(user1, request);
         endedDate = createdDate.plusDays(7);
-        final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, endedDate, endedDate, enumSetToBitmaskConverter, hourRepository);
+        final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, endedDate, endedDate, hourRepository);
 
         routineService.updateRoutine(user1, routine.getId(), newRequest);
 
