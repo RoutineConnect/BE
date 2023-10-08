@@ -9,14 +9,10 @@ spring:
       matching-strategy: ant_path_matcher
 
   datasource:
-    url: "jdbc:h2:mem:routine_connect;MODE=MYSQL;NON_KEYWORDS=USER,HOUR,DAY;DB_CLOSE_DELAY=-1"
-    username: "sa"
-    password: ""
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/team?characterEncoding=UTF-8&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     open-in-view: true
