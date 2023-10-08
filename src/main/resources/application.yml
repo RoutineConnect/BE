@@ -9,8 +9,7 @@ spring:
       matching-strategy: ant_path_matcher
 
   datasource:
-    driver-class-name: org.h2.Driver
-    url: "jdbc:h2:mem:library;MODE=MYSQL;NON_KEYWORDS=USER,HOUR,DAY;DB_CLOSE_DELAY=-1"
+    url: "jdbc:h2:mem:routine_connect;MODE=MYSQL;NON_KEYWORDS=USER,HOUR,DAY;DB_CLOSE_DELAY=-1"
     username: "sa"
     password: ""
 

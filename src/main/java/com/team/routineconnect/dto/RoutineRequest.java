@@ -1,5 +1,6 @@
 package com.team.routineconnect.dto;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.Routine;
@@ -12,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
+import java.util.Optional;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +23,7 @@ public class RoutineRequest {
 
     @NotEmpty(message = "제목은 한 글자 이상이어야합니다.")
     private String title;
-    private Hour hour;
+    private HourDto hour;
     @NotNull
     private Byte routine_day;
     @NotNull
@@ -29,20 +31,24 @@ public class RoutineRequest {
     @NotNull
     private LocalDateTime created_date;
     private LocalDateTime ended_date;
-    @Getter(AccessLevel.NONE)
-    private EnumSetToBitmaskConverter enumSetToBitmaskConverter;
 
     @Getter(AccessLevel.NONE)
     private HourRepository hourRepository;
 
-    public Routine toEntity(User user) {
-        if (hour != null) {
-            if (hour.getId() == null) {
-                hour.setUser(user);
-                hour = hourRepository.save(hour);
-            } else {
-                hour = hourRepository.findById(hour.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Illegal hour ID"));
+    public Routine toEntity(
+            User user
+            , EnumSetToBitmaskConverter enumSetToBitmaskConverter,
+            ObjectMapper objectMapper,
+            HourRepository hourRepository
+    ) {
+        Hour hour = this.hour.toEntity(objectMapper);
+        if (hour.getId() == null) {
+            hour.setUser(user);
+            hour = hourRepository.save(hour);
+        } else {
+            Optional<Hour> hourOptional = hourRepository.findById(hour.getId());
+            if (hourOptional.isEmpty() || !user.equals(hourOptional.get().getUser())) {
+                throw new IllegalArgumentException("Invalid hour ID");
             }
         }
 
@@ -50,14 +56,14 @@ public class RoutineRequest {
                 .user(user)
                 .title(title)
                 .hour(hour)
-                .repeatingDays(routineDayToEntityAttribute())
+                .repeatingDays(routineDayToEntityAttribute(enumSetToBitmaskConverter))
                 .shared(shared)
                 .createdDate(created_date)
                 .endedDate(ended_date)
                 .build();
     }
 
-    public EnumSet<DayOfWeek> routineDayToEntityAttribute() {
+    public EnumSet<DayOfWeek> routineDayToEntityAttribute(EnumSetToBitmaskConverter enumSetToBitmaskConverter) {
         return enumSetToBitmaskConverter.convertToEntityAttribute(this.routine_day);
     }
 }
