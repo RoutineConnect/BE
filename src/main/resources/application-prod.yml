@@ -10,7 +10,7 @@ spring:
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/team?characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/routine_connect?characterEncoding=UTF-8&serverTimezone=UTC
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
