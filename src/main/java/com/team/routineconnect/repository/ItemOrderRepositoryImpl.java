@@ -49,11 +49,12 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public Optional<Float> findMaxPositionByUserAndDate(User user, LocalDate date) {
+    public Optional<Float> findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date) {
         Float maxPosition = queryFactory
                 .select(itemOrder.position.max())
                 .from(itemOrder)
                 .where(itemOrder.date.eq(date)
+                        .and(itemOrder.day.eq(day))
                         .and(itemOrder.user.eq(user)))
                 .fetchOne();
 

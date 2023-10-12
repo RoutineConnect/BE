@@ -9,12 +9,13 @@ import org.springframework.stereotype.Repository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ItemOrderRepository extends JpaRepository<ItemOrder, Long>, ItemOrderRepositoryCustom {
     List<ItemOrder> findByUserAndDateAndRoutineIsNotNull(User user, LocalDate date);
 
-    List<ItemOrder> findByUserAndRoutineAndDayAndDateLessThanEqual(User user, Routine routine, DayOfWeek day, LocalDate date);
+    List<ItemOrder> findByRoutineAndDayAndDateLessThanEqual(Routine routine, DayOfWeek day, LocalDate date);
 
     List<ItemOrder> findByUserAndDateAndRoutineNot(User user, LocalDate date, Routine routine);
 
@@ -26,9 +27,9 @@ public interface ItemOrderRepository extends JpaRepository<ItemOrder, Long>, Ite
 
     void deleteByRoutineAndDayAndDateGreaterThan(Routine routine, DayOfWeek day, LocalDate date);
 
-
     void deleteAllByRoutineAndDayAndDateGreaterThan(Routine routine, DayOfWeek day, LocalDate date);
 
     List<ItemOrder> findByDateGreaterThanEqual(LocalDate date);
 
+    Optional<ItemOrder> findTopByRoutineAndDateLessThanOrderByDateDesc(Routine routine, LocalDate date);
 }
