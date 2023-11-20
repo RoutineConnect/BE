@@ -17,7 +17,7 @@ public class EnumSetToBitmaskConverter implements AttributeConverter<EnumSet<Day
     public Byte convertToDatabaseColumn(EnumSet<DayOfWeek> attribute) {
         byte bitmask = 0;
         for (DayOfWeek dayOfWeek : attribute) {
-            bitmask |= 1 << dayOfWeek.getValue();
+            bitmask |= 1 << dayOfWeek.ordinal();
         }
         return bitmask;
     }
@@ -26,7 +26,7 @@ public class EnumSetToBitmaskConverter implements AttributeConverter<EnumSet<Day
     public EnumSet<DayOfWeek> convertToEntityAttribute(Byte dbData) {
         EnumSet<DayOfWeek> days = EnumSet.noneOf(DayOfWeek.class);
         for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
-            if ((dbData & (1 << dayOfWeek.getValue())) != 0) {
+            if ((dbData & (1 << dayOfWeek.ordinal())) != 0) {
                 days.add(dayOfWeek);
             }
         }
