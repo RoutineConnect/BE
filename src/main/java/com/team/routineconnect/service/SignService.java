@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Collections;
 
 @Service
@@ -24,7 +23,7 @@ public class SignService {
     public PasswordEncoder passwordEncoder;
 
     public SignService(UserRepository userRepository, JwtTokenProvider jwtTokenProvider,
-                       PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
@@ -32,12 +31,22 @@ public class SignService {
 
     public SignUpResultDto signUp(SignUpRequestDto signUpRequestDto) {
         LOGGER.info("[getSignUpResult] 회원 가입 정보 전달");
-        User user = User.builder()
-                .email(signUpRequestDto.getEmail())
-                .name(signUpRequestDto.getName())
-                .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
-                .roles(Collections.singletonList("ROLE_USER"))
-                .build();
+        User user;
+        if (signUpRequestDto.getRole().equalsIgnoreCase("admin")) {
+            user = User.builder()
+                    .email(signUpRequestDto.getEmail())
+                    .name(signUpRequestDto.getName())
+                    .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
+                    .roles(Collections.singletonList("ROLE_ADMIN"))
+                    .build();
+        } else {
+            user = User.builder()
+                    .email(signUpRequestDto.getEmail())
+                    .name(signUpRequestDto.getName())
+                    .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
+                    .roles(Collections.singletonList("ROLE_USER"))
+                    .build();
+        }
 
         User savedUser = userRepository.save(user);
         SignUpResultDto signUpResultDto = new SignInResultDto();
