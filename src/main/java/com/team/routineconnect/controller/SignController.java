@@ -61,8 +61,8 @@ public class SignController {
     })
     @PostMapping(value = "/sign-up")
     public SignUpResultDto signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
-        LOGGER.info("[signUp] 회원가입을 수행합니다. email : {}, password : ****, name : {}",
-                signUpRequestDto.getEmail(), signUpRequestDto.getName());
+        LOGGER.info("[signUp] 회원가입을 수행합니다. email : {}, password : ****, name : {}, role : {}",
+                signUpRequestDto.getEmail(), signUpRequestDto.getName(), signUpRequestDto.getRole());
         SignUpResultDto signUpResultDto = signService.signUp(signUpRequestDto);
 
         LOGGER.info("[signUp] 회원가입을 완료했습니다. email : {}", signUpRequestDto.getEmail());
