@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
-import com.team.routineconnect.repository.HourRepository;
 import lombok.*;
 
 import javax.persistence.*;
@@ -30,10 +29,10 @@ public class Routine {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    //    일월화수목금토
-//    ________ 0 or 1
     @Column(nullable = false)
     private String title;
+    //    일월화수목금토
+//    ________ 0 or 1
     @Convert(converter = EnumSetToBitmaskConverter.class)
     @Column(nullable = false)
     private EnumSet<DayOfWeek> repeatingDays;

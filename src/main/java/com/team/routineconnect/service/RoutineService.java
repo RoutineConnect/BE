@@ -77,7 +77,7 @@ public class RoutineService {
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
             List<ItemOrder> itemOrders = itemOrderRepository
-                    .findByUserAndRoutineAndDayAndDateLessThanEqual(user, routine, day, currentDate);
+                    .findByRoutineAndDayAndDateLessThanEqual(routine, day, currentDate);
 
 //            생성일을 이전 날짜로 수정? 마이루틴은 이후로만 바꿀 수 있음
             if (routine.isSetTo(day) && itemOrders.isEmpty()) {
@@ -115,14 +115,18 @@ public class RoutineService {
             Routine routine = routineRepository.findById(update.getRoutine_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
             validate(routine.userIs(user));
+            Float updatePosition= update.getPosition();
 
+            ItemOrder itemOrder=itemOrderRepository.findTopByRoutineAndDateLessThanOrderByDateDesc(routine, date)
+                    .orElseThrow(()->new IllegalArgumentException("Invalid routine"));
+            itemOrder.updatePositionTo(updatePosition);
+            Float originalPosition = itemOrder.getPosition();
             List<ItemOrder> itemOrders = itemOrderRepository
                     .findByRoutineAndDateAfterOrderByDate(routine, date);
-            Float originalPosition = itemOrders.get(0).getPosition();
 
             for (ItemOrder item : itemOrders) {
                 if (item.positionIs(originalPosition)) {
-                    item.updatePositionTo(update.getPosition());
+                    item.updatePositionTo(updatePosition);
                 }
             }
         }
@@ -164,7 +168,7 @@ public class RoutineService {
     }
 
     public void updateTodayItemOrder(User user, Routine routine, LocalDate date, DayOfWeek day) {
-        Float position = itemOrderRepository.findMaxPositionByUserAndDate(user, date)
+        Float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, date)
                 .orElse(0f);
 
         ItemOrder itemOrder = ItemOrder.builder()
@@ -182,7 +186,7 @@ public class RoutineService {
         List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateAfter(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
-            float position = itemOrderRepository.findMaxPositionByUserAndDate(user, dateTime).get() + 1;
+            float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime).get() + 1;
 
             ItemOrder itemOrder = ItemOrder.builder()
                     .user(user)

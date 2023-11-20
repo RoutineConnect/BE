@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,6 +145,26 @@ public class RoutineServiceTest {
         assertThat(itemOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
         assertThat(itemOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
     }
+
+    @DisplayName("이후 날짜 루틴 순서 변경 성공")
+    @Test
+    public void 이후날짜루틴순서변경Test() throws Exception {
+        final LocalDate laterDate = createdDate.plusDays(7).toLocalDate();
+        final Float position = 0.5f;
+        final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, hourRepository);
+        Routine routine1 = routineService.addRoutine(user1, request1);
+        Routine routine2 = routineService.addRoutine(user1, request2);
+        List<RoutineUpdate> routineUpdate = new ArrayList<>(List.of(new RoutineUpdate(routine2.getId(), position)));
+
+        routineService.updateRoutineOrder(user1, laterDate, routineUpdate);
+
+        List<ItemOrder> itemOrders = itemOrderRepository
+                .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).toLocalDate());
+        assertThat(itemOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
+        assertThat(itemOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
+    }
+
 
     //    removeBeforeDate if findMaxDateByUserAndDayAndDateBefore is same date
     @DisplayName("바로 루틴 요일 제외 성공")

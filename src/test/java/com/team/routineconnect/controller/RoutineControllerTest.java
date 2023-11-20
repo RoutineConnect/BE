@@ -10,10 +10,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 class RoutineControllerTest {
@@ -37,12 +42,14 @@ class RoutineControllerTest {
     @Test
     @WithMockUser
     void 업데이트에러Test() throws Exception {
-        RoutineUpdate emptyUpdate = new RoutineUpdate(null, null);
-        List<RoutineUpdate> updateList = Collections.singletonList(emptyUpdate);
+        List<RoutineUpdate> routineUpdates = Arrays.asList(
+                new RoutineUpdate(null, null),
+                new RoutineUpdate(null, null)
+        );
 
         ResultActions result = mockMvc.perform(patch("/api/page/{date}", "2023-09-25")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateList))
+                .content(objectMapper.writeValueAsString(routineUpdates))
         );
 
         result.andExpect(status().isBadRequest());

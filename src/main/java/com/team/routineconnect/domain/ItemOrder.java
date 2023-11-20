@@ -39,6 +39,7 @@ public class ItemOrder {
 
     @Column(nullable = false)
     private Float position;
+
     @Enumerated(EnumType.STRING)
     private Accomplishment accomplishment;
 

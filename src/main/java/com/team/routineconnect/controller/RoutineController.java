@@ -8,17 +8,24 @@ import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.service.RoutineService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+@Validated
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
@@ -29,7 +36,10 @@ public class RoutineController {
     // 메인페이지 (개인 루틴) 조회
     @GetMapping("/page/{date}")
     public ResponseEntity<List<ItemOrder>> getMemberRoutinesOnDate(
-            @AuthenticationPrincipal User user, @PathVariable LocalDate date) {
+            @AuthenticationPrincipal User user,
+            @PathVariable
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date) {
         List<ItemOrder> routines = routineService.findRoutinesByUserOnDate(user, date);
         return ResponseEntity.ok(routines);
     }
@@ -66,7 +76,9 @@ public class RoutineController {
     @PatchMapping("/page/{date}")
     public ResponseEntity<Void> updateRoutineOrder(
             @AuthenticationPrincipal User user,
-            @PathVariable LocalDate date,
+            @PathVariable
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date,
             @Valid @RequestBody List<RoutineUpdate> routineUpdates) {
         routineService.updateRoutineOrder(user, date, routineUpdates);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -75,7 +87,10 @@ public class RoutineController {
     // 일자 별 달성도 표시 조회
     @GetMapping("/achievement/{date}")
     public ResponseEntity<List<Float>> getAchievementsForWeek(
-            @AuthenticationPrincipal User user, @PathVariable LocalDate date) {
+            @AuthenticationPrincipal User user,
+            @PathVariable
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date) {
         List<Float> achievements = routineService.getAchievementsForWeek(user, date);
         return ResponseEntity.ok(achievements);
     }
@@ -87,12 +102,21 @@ public class RoutineController {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public String handleIllegalArgumentException() {
-        return "redirect:/error";
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<?> onConstraintValidationException(ConstraintViolationException e) {
+        return new ResponseEntity<>(e.getConstraintViolations(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public void handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        MethodArgumentNotValidException error = e;
+    ResponseEntity<?> onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        return new ResponseEntity<>(e.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        DefaultMessageSourceResolvable::getDefaultMessage
+                )), HttpStatus.BAD_REQUEST);
     }
 }
