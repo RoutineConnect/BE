@@ -17,9 +17,6 @@ public class SignUpRequestDto {
     @NotBlank
     private String name;
 
-    @NotBlank
-    private String role;
-
     public User toEntity() {
         return User.builder()
                 .email(email)
