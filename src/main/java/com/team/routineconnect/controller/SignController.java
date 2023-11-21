@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,7 +62,7 @@ public class SignController {
             @ApiResponse(code = 500, message = "서버 오류")
     })
     @PostMapping(value = "/sign-up")
-    public SignUpResultDto signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
+    public SignUpResultDto signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         LOGGER.info("[signUp] 회원가입을 수행합니다. email : {}, password : ****, name : {}",
                 signUpRequestDto.getEmail(), signUpRequestDto.getName());
         SignUpResultDto signUpResultDto = signService.signUp(signUpRequestDto);
@@ -74,20 +76,8 @@ public class SignController {
         throw new RuntimeException("접근이 금지되었습니다.");
     }
 
-    @ExceptionHandler(value = RuntimeException.class)
-    public ResponseEntity<Map<String, String>> ExceptionHandler(RuntimeException e) {
-        HttpHeaders responseHeaders = new HttpHeaders();
-        //responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json");
-        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
-        LOGGER.error("ExceptionHandler 호출, {}, {}", e.getCause(), e.getMessage());
-
-        Map<String, String> map = new HashMap<>();
-        map.put("error type", httpStatus.getReasonPhrase());
-        map.put("code", "400");
-        map.put("message", "에러 발생");
-
-        return new ResponseEntity<>(map, responseHeaders, httpStatus);
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<?> onConstraintValidationException(ConstraintViolationException e) {
+        return new ResponseEntity<>(e.getConstraintViolations(), HttpStatus.BAD_REQUEST);
     }
-
 }
