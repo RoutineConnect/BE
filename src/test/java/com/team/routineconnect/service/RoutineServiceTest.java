@@ -1,9 +1,8 @@
 package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
-import com.team.routineconnect.domain.Hour;
+import com.team.routineconnect.domain.Item;
 import com.team.routineconnect.domain.ItemOrder;
-import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.HourDto;
 import com.team.routineconnect.dto.RoutineRequest;
@@ -19,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +42,8 @@ public class RoutineServiceTest {
     private Byte routineDay;
     private HourDto hour;
     private Boolean shared;
-    private LocalDateTime createdDate;
-    private LocalDateTime endedDate;
+    private LocalDate createdDate;
+    private LocalDate endedDate;
     private String title1 = "title1";
     private String title2 = "title2";
 
@@ -55,7 +53,7 @@ public class RoutineServiceTest {
         this.routineDay = (byte) 0b11111110;
         this.hour = new HourDto("hour");
         this.shared = false;
-        this.createdDate = LocalDateTime.parse("2023-08-22T22:55:00");
+        this.createdDate = LocalDate.parse("2023-08-22");
         this.endedDate = null;
         this.title1 = "title1";
         this.title2 = "title2";
@@ -71,7 +69,7 @@ public class RoutineServiceTest {
         routineService.addRoutine(user1, request);
 
         // Then
-        List<Routine> routines = routineService.findAll();
+        List<Item> routines = routineService.findAll();
         assertThat(routines.size()).isEqualTo(1);
 
         List<ItemOrder> itemOrders = itemOrderRepository.findAll();
@@ -91,13 +89,13 @@ public class RoutineServiceTest {
         routineService.addRoutine(user1, request2);
 
         // Then
-        List<Routine> routines = routineService.findAll();
+        List<Item> routines = routineService.findAll();
         assertThat(routines.size()).isEqualTo(2);
 
         List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
         assertThat(allItemOrders.size()).isEqualTo(14);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, createdDate.toLocalDate());
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user1, createdDate);
         assertThat(itemOrders.size()).isEqualTo(2);
     }
 
@@ -107,7 +105,7 @@ public class RoutineServiceTest {
     @Test
     public void 이미루틴이있을때일주일뒤새루틴추가Test() throws Exception {
 
-        final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
+        final LocalDate laterRoutineDate = createdDate.plusDays(7);
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, laterRoutineDate, endedDate, hourRepository);
 
@@ -115,16 +113,16 @@ public class RoutineServiceTest {
         routineService.addRoutine(user1, request2);
 
         // Then
-        List<Routine> routines = routineService.findAll();
+        List<Item> routines = routineService.findAll();
         assertThat(routines.size()).isEqualTo(2);
 
         List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
         assertThat(allItemOrders.size()).isEqualTo(21);
 
-        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, createdDate.toLocalDate());
+        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user1, createdDate);
         assertThat(itemOrder.size()).isEqualTo(1);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, laterRoutineDate.toLocalDate());
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user1, laterRoutineDate);
         assertThat(itemOrders.size()).isEqualTo(2);
     }
 
@@ -134,35 +132,35 @@ public class RoutineServiceTest {
         final Float position = 0.5f;
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, hourRepository);
-        Routine routine1 = routineService.addRoutine(user1, request1);
-        Routine routine2 = routineService.addRoutine(user1, request2);
+        Item routine1 = routineService.addRoutine(user1, request1);
+        Item routine2 = routineService.addRoutine(user1, request2);
         List<RoutineUpdate> routineUpdate = new ArrayList<>(List.of(new RoutineUpdate(routine2.getId(), position)));
 
-        routineService.updateRoutineOrder(user1, createdDate.toLocalDate(), routineUpdate);
+        routineService.updateRoutineOrder(user1, createdDate, routineUpdate);
 
         List<ItemOrder> itemOrders = itemOrderRepository
-                .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).toLocalDate());
-        assertThat(itemOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
-        assertThat(itemOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
+                .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6));
+        assertThat(itemOrders.get(0).getItem().getTitle()).isEqualTo(routine2.getTitle());
+        assertThat(itemOrders.get(1).getItem().getTitle()).isEqualTo(routine1.getTitle());
     }
 
     @DisplayName("이후 날짜 루틴 순서 변경 성공")
     @Test
     public void 이후날짜루틴순서변경Test() throws Exception {
-        final LocalDate laterDate = createdDate.plusDays(7).toLocalDate();
+        final LocalDate laterDate = createdDate.plusDays(7);
         final Float position = 0.5f;
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, routineDay, shared, createdDate, endedDate, hourRepository);
-        Routine routine1 = routineService.addRoutine(user1, request1);
-        Routine routine2 = routineService.addRoutine(user1, request2);
+        Item routine1 = routineService.addRoutine(user1, request1);
+        Item routine2 = routineService.addRoutine(user1, request2);
         List<RoutineUpdate> routineUpdate = new ArrayList<>(List.of(new RoutineUpdate(routine2.getId(), position)));
 
         routineService.updateRoutineOrder(user1, laterDate, routineUpdate);
 
         List<ItemOrder> itemOrders = itemOrderRepository
-                .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6).toLocalDate());
-        assertThat(itemOrders.get(0).getRoutine().getTitle()).isEqualTo(routine2.getTitle());
-        assertThat(itemOrders.get(1).getRoutine().getTitle()).isEqualTo(routine1.getTitle());
+                .findByUserAndDateOrderByPosition(user1, createdDate.plusDays(6));
+        assertThat(itemOrders.get(0).getItem().getTitle()).isEqualTo(routine2.getTitle());
+        assertThat(itemOrders.get(1).getItem().getTitle()).isEqualTo(routine1.getTitle());
     }
 
 
@@ -173,7 +171,7 @@ public class RoutineServiceTest {
         final Byte newRoutineDay = 0b111110;
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
-        final Routine routine1 = routineService.addRoutine(user1, request);
+        final Item routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
@@ -186,10 +184,10 @@ public class RoutineServiceTest {
     @Test
     public void 일주일뒤루틴요일제외변경Test() throws Exception {
         final Byte newRoutineDay = 0b111110;
-        final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
+        final LocalDate laterRoutineDate = createdDate.plusDays(7);
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, laterRoutineDate, endedDate, hourRepository);
-        final Routine routine1 = routineService.addRoutine(user1, request);
+        final Item routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
@@ -204,7 +202,7 @@ public class RoutineServiceTest {
         final Byte newRoutineDay = 0b111110;
         final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
-        final Routine routine1 = routineService.addRoutine(user1, request);
+        final Item routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
@@ -217,16 +215,16 @@ public class RoutineServiceTest {
     @Test
     public void 일주일전루틴요일추가Test() throws Exception {
         final Byte newRoutineDay = 0b111110;
-        LocalDateTime earlierRoutineDate = createdDate.minusDays(7);
+        LocalDate earlierRoutineDate = createdDate.minusDays(7);
         final RoutineRequest request = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, earlierRoutineDate, endedDate, hourRepository);
-        final Routine routine1 = routineService.addRoutine(user1, request);
+        final Item routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
         while (earlierRoutineDate.isBefore(createdDate)) {
             assertThat(itemOrderRepository
-                    .findByUserAndDateAndRoutineIsNotNull(user1, earlierRoutineDate.toLocalDate())
+                    .findByUserAndDateAndItemIsNotNull(user1, earlierRoutineDate)
                     .size()).isEqualTo(1);
             earlierRoutineDate = earlierRoutineDate.plusDays(1);
         }
@@ -241,7 +239,7 @@ public class RoutineServiceTest {
         final Byte newRoutineDay = 0b101010;
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
-        final Routine routine1 = routineService.addRoutine(user1, request);
+        final Item routine1 = routineService.addRoutine(user1, request);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
 
@@ -255,12 +253,12 @@ public class RoutineServiceTest {
     @Test
     public void 일주일뒤원래루틴요일동시추가제외Test() throws Exception {
         routineDay = 0b1010100;
-        final LocalDateTime laterRoutineDate = createdDate.plusDays(7);
+        final LocalDate laterRoutineDate = createdDate.plusDays(7);
         final Byte newRoutineDay = 0b101010;
         final RoutineRequest request1 = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
         final RoutineRequest request2 = new RoutineRequest(title2, hour, (byte) 0b11111110, shared, laterRoutineDate, endedDate, hourRepository);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, newRoutineDay, shared, createdDate, endedDate, hourRepository);
-        final Routine routine1 = routineService.addRoutine(user1, request1);
+        final Item routine1 = routineService.addRoutine(user1, request1);
         routineService.addRoutine(user1, request2);
 
         routineService.updateRoutine(user1, routine1.getId(), newRequest);
@@ -277,15 +275,15 @@ public class RoutineServiceTest {
     @Test
     public void 루틴종료Test() throws Exception {
         final RoutineRequest request = new RoutineRequest(title1, hour, routineDay, shared, createdDate, endedDate, hourRepository);
-        Routine routine = routineService.addRoutine(user1, request);
+        Item item = routineService.addRoutine(user1, request);
         endedDate = createdDate.plusDays(7);
         final RoutineRequest newRequest = new RoutineRequest(title1, hour, routineDay, shared, endedDate, endedDate, hourRepository);
 
-        routineService.updateRoutine(user1, routine.getId(), newRequest);
+        routineService.updateRoutine(user1, item.getId(), newRequest);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByDateGreaterThanEqual(endedDate.toLocalDate());
+        List<ItemOrder> itemOrders = itemOrderRepository.findByDateGreaterThanEqual(endedDate);
         for (ItemOrder itemOrder : itemOrders) {
-            assertThat(itemOrder.getRoutine()).isNull();
+            assertThat(itemOrder.getItem()).isNull();
         }
         assertThat(itemOrders.size()).isEqualTo(7);
     }
