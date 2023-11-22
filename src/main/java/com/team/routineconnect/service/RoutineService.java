@@ -42,7 +42,7 @@ public class RoutineService {
     }
 
     public Routine addRoutine(User user, RoutineRequest request) {
-        LocalDate currentDate = request.getCreated_date().toLocalDate();
+        LocalDate currentDate = request.getCreated_date();
         LocalDate lastDate = currentDate.plusDays(7);
 
         Routine routine = routineRepository.save(
@@ -70,9 +70,9 @@ public class RoutineService {
         Byte bitsToModify = (byte) (originalDays ^ request.getRoutine_day());
         EnumSet<DayOfWeek> daysToModify = enumSetToBitmaskConverter.convertToEntityAttribute(bitsToModify);
         EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
-        LocalDate currentDate = request.getCreated_date().toLocalDate();
+        LocalDate currentDate = request.getCreated_date();
         LocalDate lastDate = currentDate.plusDays(7);
-        Optional<LocalDateTime> endDate = Optional.ofNullable(request.getEnded_date());
+        Optional<LocalDate> endDate = Optional.ofNullable(request.getEnded_date());
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -91,8 +91,8 @@ public class RoutineService {
             }
 
             if (endDate.isPresent() && (
-                    currentDate.isEqual(endDate.get().toLocalDate())
-                            || currentDate.isAfter(endDate.get().toLocalDate()))) {
+                    currentDate.isEqual(endDate.get())
+                            || currentDate.isAfter(endDate.get()))) {
                 removeRoutine(user, routine, currentDate, day);
             }
 

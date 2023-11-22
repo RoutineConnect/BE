@@ -3,6 +3,7 @@ package com.team.routineconnect.dto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
+import com.team.routineconnect.domain.Item;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.repository.HourRepository;
@@ -11,7 +12,7 @@ import lombok.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -29,8 +30,8 @@ public class RoutineRequest {
     @NotNull
     private Boolean shared;
     @NotNull
-    private LocalDateTime created_date;
-    private LocalDateTime ended_date;
+    private LocalDate created_date;
+    private LocalDate ended_date;
 
     @Getter(AccessLevel.NONE)
     private HourRepository hourRepository;
@@ -52,7 +53,7 @@ public class RoutineRequest {
             }
         }
 
-        return Routine.builder()
+        return (Routine) Item.builder()
                 .user(user)
                 .title(title)
                 .hour(hour)
