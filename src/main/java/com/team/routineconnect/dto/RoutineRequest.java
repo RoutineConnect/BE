@@ -3,7 +3,7 @@ package com.team.routineconnect.dto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
-import com.team.routineconnect.domain.Item;
+import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.repository.HourRepository;
 import lombok.*;
@@ -11,7 +11,7 @@ import lombok.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -29,13 +29,13 @@ public class RoutineRequest {
     @NotNull
     private Boolean shared;
     @NotNull
-    private LocalDate created_date;
-    private LocalDate ended_date;
+    private LocalDateTime created_date;
+    private LocalDateTime ended_date;
 
     @Getter(AccessLevel.NONE)
     private HourRepository hourRepository;
 
-    public Item toEntity(
+    public Routine toEntity(
             User user
             , EnumSetToBitmaskConverter enumSetToBitmaskConverter,
             ObjectMapper objectMapper,
@@ -52,7 +52,7 @@ public class RoutineRequest {
             }
         }
 
-        return Item.builder()
+        return Routine.builder()
                 .user(user)
                 .title(title)
                 .hour(hour)

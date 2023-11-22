@@ -83,7 +83,7 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
                     .where(itemOrder.day.eq(day)
                             .and(itemOrder.date.loe(date))
                             .and(itemOrder.user.eq(user))
-                            .and(itemOrder.item.isNotNull()))
+                            .and(itemOrder.routine.isNotNull()))
                     .fetch();
         } else {
             return Collections.emptyList();
