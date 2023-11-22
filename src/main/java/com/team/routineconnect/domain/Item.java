@@ -47,6 +47,18 @@ public class Item {
     @Column
     private String retrospective;
 
+    public Item(User user, String title, Hour hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared,
+                LocalDate createdDate, LocalDate endedDate, String retrospective) {
+        this.user = user;
+        this.title = title;
+        this.hour = hour;
+        this.repeatingDays = repeatingDays;
+        this.shared = shared;
+        this.createdDate = createdDate;
+        this.endedDate = endedDate;
+        this.retrospective = retrospective;
+    }
+
     public Boolean isSetTo(Object o) {
         return repeatingDays.contains(o);
     }

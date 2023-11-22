@@ -3,7 +3,6 @@ package com.team.routineconnect.dto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
-import com.team.routineconnect.domain.Item;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
 import com.team.routineconnect.repository.HourRepository;
@@ -32,6 +31,7 @@ public class RoutineRequest {
     @NotNull
     private LocalDate created_date;
     private LocalDate ended_date;
+    private String retrospective;
 
     @Getter(AccessLevel.NONE)
     private HourRepository hourRepository;
@@ -53,15 +53,8 @@ public class RoutineRequest {
             }
         }
 
-        return (Routine) Item.builder()
-                .user(user)
-                .title(title)
-                .hour(hour)
-                .repeatingDays(routineDayToEntityAttribute(enumSetToBitmaskConverter))
-                .shared(shared)
-                .createdDate(created_date)
-                .endedDate(ended_date)
-                .build();
+        return new Routine(user, title, hour, routineDayToEntityAttribute(enumSetToBitmaskConverter), shared,
+                created_date, ended_date, retrospective);
     }
 
     public EnumSet<DayOfWeek> routineDayToEntityAttribute(EnumSetToBitmaskConverter enumSetToBitmaskConverter) {
