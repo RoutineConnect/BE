@@ -1,7 +1,6 @@
 package com.team.routineconnect.service;
 
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
-import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
@@ -19,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +95,7 @@ public class RoutineServiceTest {
         List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
         assertThat(allItemOrders.size()).isEqualTo(14);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, createdDate);
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user1, createdDate);
         assertThat(itemOrders.size()).isEqualTo(2);
     }
 
@@ -121,10 +119,10 @@ public class RoutineServiceTest {
         List<ItemOrder> allItemOrders = itemOrderRepository.findAll();
         assertThat(allItemOrders.size()).isEqualTo(21);
 
-        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, createdDate);
+        List<ItemOrder> itemOrder = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user1, createdDate);
         assertThat(itemOrder.size()).isEqualTo(1);
 
-        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndRoutineIsNotNull(user1, laterRoutineDate);
+        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user1, laterRoutineDate);
         assertThat(itemOrders.size()).isEqualTo(2);
     }
 
@@ -226,7 +224,7 @@ public class RoutineServiceTest {
 
         while (earlierRoutineDate.isBefore(createdDate)) {
             assertThat(itemOrderRepository
-                    .findByUserAndDateAndRoutineIsNotNull(user1, earlierRoutineDate)
+                    .findByUserAndDateAndItemIsNotNull(user1, earlierRoutineDate)
                     .size()).isEqualTo(1);
             earlierRoutineDate = earlierRoutineDate.plusDays(1);
         }

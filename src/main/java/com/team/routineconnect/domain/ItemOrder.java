@@ -26,8 +26,8 @@ public class ItemOrder {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "routine_id")
-    private Routine routine;
+    @JoinColumn(name = "item_id")
+    private Item item;
 
     @JsonIgnore
     @Column(nullable = false)
@@ -44,9 +44,9 @@ public class ItemOrder {
     private Accomplishment accomplishment;
 
     @Builder
-    public ItemOrder(User user, Routine routine, LocalDate date, DayOfWeek day, Float position) {
+    public ItemOrder(User user, Item item, LocalDate date, DayOfWeek day, Float position) {
         this.user = user;
-        this.routine = routine;
+        this.item = item;
         this.date = date;
         this.day = day;
         this.position = position;
