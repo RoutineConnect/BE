@@ -40,9 +40,8 @@ public class User implements UserDetails {
     @Column
     private String profileImageUrl;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Builder.Default
-    private List<String> roles = new ArrayList<>();
+    @Column(nullable = false)
+    private String roles;
 
     @Builder
     public User(String name, String email, String password, String profileImageUrl) {
@@ -54,8 +53,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(this.roles);
+        return Collections.singletonList(authority);
     }
+
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Override

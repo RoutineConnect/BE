@@ -25,7 +25,7 @@ public class RoutineRequest {
     private String title;
     private HourDto hour;
     @NotNull
-    private Byte routine_day;
+    private String routine_day;
     @NotNull
     private Boolean shared;
     @NotNull
@@ -58,6 +58,6 @@ public class RoutineRequest {
     }
 
     public EnumSet<DayOfWeek> routineDayToEntityAttribute(EnumSetToBitmaskConverter enumSetToBitmaskConverter) {
-        return enumSetToBitmaskConverter.convertToEntityAttribute(this.routine_day);
+        return enumSetToBitmaskConverter.convertToEntityAttribute((byte) Integer.parseInt(this.routine_day,2));
     }
 }
