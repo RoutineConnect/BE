@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class SignService {
@@ -36,7 +38,7 @@ public class SignService {
                 .email(signUpRequestDto.getEmail())
                 .name(signUpRequestDto.getName())
                 .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
-                .roles(Collections.singletonList("ROLE_USER"))
+                .roles("ROLE_USER")
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -67,7 +69,7 @@ public class SignService {
         LOGGER.info("[getSignInResult] SignInResultDto 객체 생성");
         SignInResultDto signInResultDto = SignInResultDto.builder()
                 .token(jwtTokenProvider.createToken(String.valueOf(user.getEmail()),
-                        user.getRoles()))
+                        List.of(user.getRoles())))
                 .build();
 
         LOGGER.info("[getSignInResult] SignInResultDto 객체에 값 주입");
