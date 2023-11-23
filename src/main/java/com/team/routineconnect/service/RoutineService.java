@@ -15,7 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
@@ -66,7 +69,7 @@ public class RoutineService {
         validate(routine.userIs(user));
 
         Byte originalDays = enumSetToBitmaskConverter.convertToDatabaseColumn(routine.getRepeatingDays());
-        Byte bitsToModify = (byte) (originalDays ^ request.getRoutine_day());
+        Byte bitsToModify = (byte) (originalDays ^ Integer.parseInt(request.getRoutine_day(), 2));
         EnumSet<DayOfWeek> daysToModify = enumSetToBitmaskConverter.convertToEntityAttribute(bitsToModify);
         EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         LocalDate currentDate = request.getCreated_date();
@@ -105,8 +108,8 @@ public class RoutineService {
      * 해당 일자 아이템 목록만 수정하는 것이 아닌 position이 같은 아이템 목록 전체를 수정하기 때문에 ItemOrder가 아니라 Item의 id를
      * 기준으로 position을 update함.
      *
-     * @param user @AuthenticationPrincipal로 가져온, 현재 요청한 User
-     * @param date Item position을 update할 일자
+     * @param user           @AuthenticationPrincipal로 가져온, 현재 요청한 User
+     * @param date           Item position을 update할 일자
      * @param routineUpdates Item id와 update할 position이 담긴 요청 DTO List
      */
     public void updateRoutineOrder(User user, LocalDate date, List<RoutineUpdate> routineUpdates) {
@@ -114,10 +117,10 @@ public class RoutineService {
             Routine routine = routineRepository.findById(update.getRoutine_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
             validate(routine.userIs(user));
-            Float updatePosition= update.getPosition();
+            Float updatePosition = update.getPosition();
 
-            ItemOrder itemOrder=itemOrderRepository.findTopByItemAndDateLessThanOrderByDateDesc(routine, date)
-                    .orElseThrow(()->new IllegalArgumentException("Invalid routine"));
+            ItemOrder itemOrder = itemOrderRepository.findTopByItemAndDateLessThanOrderByDateDesc(routine, date)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid routine"));
             itemOrder.updatePositionTo(updatePosition);
             Float originalPosition = itemOrder.getPosition();
             List<ItemOrder> itemOrders = itemOrderRepository
