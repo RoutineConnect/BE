@@ -18,7 +18,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        final String token = request.getHeader("X-AUTH-TOKEN");
+        final String token = request.getHeader("TOKEN");
         if (!jwtTokenProvider.validateToken(token)) {
             throw new Exception("권한이 없습니다.");
         }

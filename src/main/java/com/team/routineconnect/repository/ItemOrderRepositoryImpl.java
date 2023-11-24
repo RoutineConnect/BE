@@ -96,7 +96,7 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
         float clearRoutines = (float) queryFactory
                 .select(Wildcard.count)
                 .from(itemOrder)
-                .where(itemOrder.accomplishment.eq(Accomplishment.CLEAR))
+                .where(itemOrder.accomplishment.eq(true))
                 .fetch().get(0);
 
         return totalRoutines != 0 ? clearRoutines / totalRoutines * 100 : 0;

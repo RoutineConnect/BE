@@ -49,7 +49,7 @@ public class RoutineController {
     public ResponseEntity<Void> setAccomplishment(
             @AuthenticationPrincipal User user,
             @RequestParam Long routine_item_id,
-            @RequestParam Accomplishment accomplishment) {
+            @RequestParam Boolean accomplishment) {
         routineService.setAccomplishment(user, routine_item_id, accomplishment);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

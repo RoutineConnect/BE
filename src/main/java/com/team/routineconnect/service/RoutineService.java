@@ -35,7 +35,7 @@ public class RoutineService {
         return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date);
     }
 
-    public void setAccomplishment(User user, Long routineItemId, Accomplishment accomplishment) {
+    public void setAccomplishment(User user, Long routineItemId, Boolean accomplishment) {
         ItemOrder itemOrder = itemOrderRepository.findById(routineItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item order ID"));
         validate(user.equals(itemOrder.getUser()));
