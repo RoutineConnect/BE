@@ -43,13 +43,15 @@ public class RoutineRequest {
             HourRepository hourRepository
     ) {
         Hour hour = this.hour.toEntity(objectMapper);
-        if (hour.getId() == null) {
-            hour.setUser(user);
-            hour = hourRepository.save(hour);
-        } else {
-            Optional<Hour> hourOptional = hourRepository.findById(hour.getId());
-            if (hourOptional.isEmpty() || !user.equals(hourOptional.get().getUser())) {
-                throw new IllegalArgumentException("Invalid hour ID");
+        if (hour != null) {
+            if (hour.getId() == null) {
+                hour.setUser(user);
+                hour = hourRepository.save(hour);
+            } else {
+                Optional<Hour> hourOptional = hourRepository.findById(hour.getId());
+                if (hourOptional.isEmpty() || !user.equals(hourOptional.get().getUser())) {
+                    throw new IllegalArgumentException("Invalid hour ID");
+                }
             }
         }
 
@@ -58,6 +60,6 @@ public class RoutineRequest {
     }
 
     public EnumSet<DayOfWeek> routineDayToEntityAttribute(EnumSetToBitmaskConverter enumSetToBitmaskConverter) {
-        return enumSetToBitmaskConverter.convertToEntityAttribute((byte) Integer.parseInt(this.routine_day,2));
+        return enumSetToBitmaskConverter.convertToEntityAttribute((byte) Integer.parseInt(this.routine_day, 2));
     }
 }
