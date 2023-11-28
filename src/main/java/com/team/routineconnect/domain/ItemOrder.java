@@ -1,10 +1,7 @@
 package com.team.routineconnect.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -13,6 +10,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Getter
 @Entity
 public class ItemOrder {
@@ -46,15 +45,6 @@ public class ItemOrder {
 
 //    @Enumerated(EnumType.STRING)
     private Boolean accomplishment;
-
-    @Builder
-    public ItemOrder(User user, Item item, LocalDate date, DayOfWeek day, Float position) {
-        this.user = user;
-        this.item = item;
-        this.date = date;
-        this.day = day;
-        this.position = position;
-    }
 
     public Boolean positionIs(Float position) {
         return this.position.equals(position);
