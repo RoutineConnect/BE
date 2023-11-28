@@ -2,7 +2,10 @@ package com.team.routineconnect.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
-import com.team.routineconnect.domain.*;
+import com.team.routineconnect.domain.Item;
+import com.team.routineconnect.domain.ItemOrder;
+import com.team.routineconnect.domain.Routine;
+import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.repository.HourRepository;
@@ -163,6 +166,7 @@ public class RoutineService {
                         .date(date)
                         .day(day)
                         .position(itemOrder.getPosition())
+                        .accomplishment(itemOrder.getAccomplishment())
                         .build();
                 itemOrderRepository.save(newItemOrder);
             }
@@ -179,6 +183,7 @@ public class RoutineService {
                 .date(date)
                 .day(day)
                 .position(position + 1)
+                .accomplishment(false)
                 .build();
 
         itemOrderRepository.save(itemOrder);
@@ -196,6 +201,7 @@ public class RoutineService {
                     .date(dateTime)
                     .day(day)
                     .position(position)
+                    .accomplishment(false)
                     .build();
 
             itemOrderRepository.save(itemOrder);
@@ -235,6 +241,7 @@ public class RoutineService {
                             .date(date)
                             .day(day)
                             .position(itemOrder.getPosition())
+                            .accomplishment(itemOrder.getAccomplishment())
                             .build();
                     itemOrderRepository.save(newItemOrder);
                 }

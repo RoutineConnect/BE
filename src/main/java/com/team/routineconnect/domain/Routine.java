@@ -3,12 +3,16 @@ package com.team.routineconnect.domain;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.Entity;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.EnumSet;
 
+
+@OnDelete(action = OnDeleteAction.CASCADE)
 @JsonTypeName("routine")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
