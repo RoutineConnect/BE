@@ -1,17 +1,16 @@
 package com.team.routineconnect.dto;
 
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class RoutineUpdate {
+public class ItemUpdate {
     @NotNull
-    private Long routine_id;
+    private Long item_id;
     @NotNull
     private Float position;
 }
