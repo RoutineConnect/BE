@@ -2,6 +2,7 @@ package com.team.routineconnect.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
+import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.Item;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.Routine;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -146,6 +149,14 @@ public class RoutineService {
         }
 
         return achievements;
+    }
+
+    public Set<Hour> getHours(User user) {
+        Set<Hour> hours = hourRepository.findByUserIsNull();
+        hours.addAll(user.getHours());
+        return hours.stream()
+                .limit(10)
+                .collect(Collectors.toSet());
     }
 
     public void updateBeforeDateItemOrder(User user, LocalDate date, DayOfWeek day) {

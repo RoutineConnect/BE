@@ -103,8 +103,7 @@ public class RoutineController {
 
     @GetMapping("/hour")
     public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal User user) {
-        Set<Hour> hours = user.getHours();
-        return ResponseEntity.ok(hours);
+        return ResponseEntity.ok(routineService.getHours(user));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
