@@ -1,5 +1,6 @@
 package com.team.routineconnect.controller;
 
+import com.team.routineconnect.domain.EmailCheckResponse;
 import com.team.routineconnect.dto.SignInResultDto;
 import com.team.routineconnect.dto.SignUpRequestDto;
 import com.team.routineconnect.dto.SignUpResultDto;
@@ -11,15 +12,14 @@ import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
 
 // 예제 13.28
 @RestController
@@ -71,6 +71,11 @@ public class SignController {
         return signUpResultDto;
     }
 
+    @GetMapping(value = "/check-user_email")
+    public ResponseEntity<EmailCheckResponse> checkUserEmailDuplicated(@Valid @RequestParam String email) {
+        return ResponseEntity.ok(signService.userEmailNotDuplicated(email));
+    }
+
     @GetMapping(value = "/exception")
     public void exceptionTest() throws RuntimeException {
         throw new RuntimeException("접근이 금지되었습니다.");
@@ -79,5 +84,10 @@ public class SignController {
     @ExceptionHandler(ConstraintViolationException.class)
     ResponseEntity<?> onConstraintValidationException(ConstraintViolationException e) {
         return new ResponseEntity<>(e.getConstraintViolations(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    ResponseEntity<?> onAuthenticationCredentialsNotFoundException(BadCredentialsException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 }

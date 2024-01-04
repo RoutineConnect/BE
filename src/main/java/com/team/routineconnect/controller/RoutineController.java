@@ -1,6 +1,5 @@
 package com.team.routineconnect.controller;
 
-import com.team.routineconnect.domain.Accomplishment;
 import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
