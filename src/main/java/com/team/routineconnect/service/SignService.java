@@ -11,6 +11,7 @@ import com.team.routineconnect.repository.UserRepository;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,9 +34,15 @@ public class SignService {
 
     public SignUpResultDto signUp(SignUpRequestDto signUpRequestDto) {
         LOGGER.info("[getSignUpResult] 회원 가입 정보 전달");
+        String email = signUpRequestDto.getEmail();
+        EmailCheckResponse check = checkUserEmailDuplicated(email);
+
+        if (check.isDuplicated()) {
+            throw new DuplicateKeyException(check.getMessage());
+        }
 
         User user = User.builder()
-                .email(signUpRequestDto.getEmail())
+                .email(email)
                 .name(signUpRequestDto.getName())
                 .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
                 .roles("ROLE_USER")
@@ -79,8 +86,8 @@ public class SignService {
         return signInResultDto;
     }
 
-    public EmailCheckResponse isUserEmailDuplicated(String email) {
-        return userRepository.existsByEmail(email) ? EmailCheckResponse.SUCCESS : EmailCheckResponse.ERROR;
+    public EmailCheckResponse checkUserEmailDuplicated(String email) {
+        return userRepository.existsByEmail(email) ? EmailCheckResponse.ERROR : EmailCheckResponse.SUCCESS;
     }
 
     // 결과 모델에 api 요청 성공 데이터를 세팅해주는 메소드

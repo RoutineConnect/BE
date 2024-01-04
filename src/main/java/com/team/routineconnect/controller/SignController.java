@@ -14,6 +14,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -77,7 +78,7 @@ public class SignController {
 
     @GetMapping(value = "/check-user_email")
     public ResponseEntity<EmailCheckResponse> checkUserEmailDuplicated(@Valid @RequestParam String email) {
-        return ResponseEntity.ok(signService.isUserEmailDuplicated(email));
+        return ResponseEntity.ok(signService.checkUserEmailDuplicated(email));
     }
 
     @GetMapping(value = "/exception")
@@ -91,7 +92,12 @@ public class SignController {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    ResponseEntity<?> onAuthenticationCredentialsNotFoundException(BadCredentialsException e) {
+    ResponseEntity<?> onBadCredentialsException(BadCredentialsException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    ResponseEntity<?> onDuplicateKeyException(DuplicateKeyException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 }

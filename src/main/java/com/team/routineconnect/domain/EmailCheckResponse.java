@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum EmailCheckResponse {
-    SUCCESS(true, "사용 가능한 아이디입니다."),
-    ERROR(false, "이미 사용 중인 아이디입니다.");
+    SUCCESS(false, "사용 가능한 아이디입니다."),
+    ERROR(true, "이미 사용 중인 아이디입니다.");
 
-    private final boolean status;
+    private final boolean isDuplicated;
     private final String message;
 }
