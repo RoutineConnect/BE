@@ -8,15 +8,12 @@ import com.team.routineconnect.dto.SignInResultDto;
 import com.team.routineconnect.dto.SignUpRequestDto;
 import com.team.routineconnect.dto.SignUpResultDto;
 import com.team.routineconnect.repository.UserRepository;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class SignService {
@@ -61,7 +58,7 @@ public class SignService {
     public SignInResultDto signIn(String email, String password) throws BadCredentialsException {
         LOGGER.info("[getSignInResult] signDataHandler 로 회원 정보 요청");
         User user = userRepository.getByEmail(email)
-                .orElseThrow(()->new BadCredentialsException("잘못된 아이디 혹은 비밀번호입니다."));
+                .orElseThrow(() -> new BadCredentialsException("잘못된 아이디 혹은 비밀번호입니다."));
         LOGGER.info("[getSignInResult] email : {}", email);
 
         LOGGER.info("[getSignInResult] 패스워드 비교 수행");
@@ -82,8 +79,8 @@ public class SignService {
         return signInResultDto;
     }
 
-    public EmailCheckResponse userEmailNotDuplicated(String email) {
-        return userRepository.existsByEmail(email) ? EmailCheckResponse.ERROR : EmailCheckResponse.SUCCESS;
+    public EmailCheckResponse isUserEmailDuplicated(String email) {
+        return userRepository.existsByEmail(email) ? EmailCheckResponse.SUCCESS : EmailCheckResponse.ERROR;
     }
 
     // 결과 모델에 api 요청 성공 데이터를 세팅해주는 메소드
