@@ -6,14 +6,28 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.dto.RoutineRequest;
-import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
-import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.EnumSet;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -56,11 +70,10 @@ public class Item {
     private LocalDate createdDate;
     @Column
     private LocalDate endedDate;
-    @Column
-    private String retrospective;
+
 
     public Item(User user, String title, Hour hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared,
-                LocalDate createdDate, LocalDate endedDate, String retrospective) {
+                LocalDate createdDate, LocalDate endedDate) {
         this.user = user;
         this.title = title;
         this.hour = hour;
@@ -68,7 +81,6 @@ public class Item {
         this.shared = shared;
         this.createdDate = createdDate;
         this.endedDate = endedDate;
-        this.retrospective = retrospective;
     }
 
     public Boolean isSetTo(Object o) {

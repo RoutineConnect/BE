@@ -96,9 +96,8 @@ public class RoutineService {
                 itemOrderRepository.deleteByItemAndDayAndDateGreaterThan(routine, day, currentDate);
             }
 
-            if (endDate.isPresent() && (
-                    currentDate.isEqual(endDate.get())
-                            || currentDate.isAfter(endDate.get()))) {
+            if (endDate.isPresent() &&
+                    (currentDate.isEqual(endDate.get()) || currentDate.isAfter(endDate.get()))) {
                 removeRoutine(user, routine, currentDate, day);
             }
 
