@@ -1,13 +1,18 @@
 package com.team.routineconnect.controller;
 
-import com.team.routineconnect.domain.Accomplishment;
 import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.ItemUpdate;
 import com.team.routineconnect.dto.RoutineRequest;
-import com.team.routineconnect.dto.RoutineUpdate;
 import com.team.routineconnect.service.RoutineService;
 import io.swagger.annotations.ApiOperation;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,14 +22,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RequiredArgsConstructor
@@ -85,8 +91,8 @@ public class RoutineController {
             @PathVariable
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate date,
-            @Valid @RequestBody List<RoutineUpdate> routineUpdates) {
-        routineService.updateRoutineOrder(user, date, routineUpdates);
+            @Valid @RequestBody List<ItemUpdate> itemUpdates) {
+        routineService.updateItemOrder(user, date, itemUpdates);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -105,8 +111,7 @@ public class RoutineController {
     @ApiOperation("시간목록 불러오기")
     @GetMapping("/hour")
     public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal User user) {
-        Set<Hour> hours = user.getHours();
-        return ResponseEntity.ok(hours);
+        return ResponseEntity.ok(routineService.getHours(user));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

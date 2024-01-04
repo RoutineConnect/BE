@@ -1,16 +1,22 @@
 package com.team.routineconnect.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import javax.persistence.*;
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Builder
-@AllArgsConstructor
 @Entity
 public class Hour {
 
@@ -27,6 +33,12 @@ public class Hour {
 
     @Column(nullable = false)
     private String hour;
+
+    @Builder
+    public Hour(String hour, User user) {
+        this.hour = hour;
+        this.user = user;
+    }
 
     public void setUser(User user) {
         this.user = user;

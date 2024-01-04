@@ -1,8 +1,13 @@
 package com.team.routineconnect.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team.routineconnect.dto.RoutineUpdate;
+import com.team.routineconnect.dto.ItemUpdate;
 import com.team.routineconnect.service.RoutineService;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,15 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @ActiveProfiles("test")
@@ -42,14 +38,14 @@ class RoutineControllerTest {
     @Test
     @WithMockUser
     void 업데이트에러Test() throws Exception {
-        List<RoutineUpdate> routineUpdates = Arrays.asList(
-                new RoutineUpdate(null, null),
-                new RoutineUpdate(null, null)
+        List<ItemUpdate> itemUpdates = Arrays.asList(
+                new ItemUpdate(null, null),
+                new ItemUpdate(null, null)
         );
 
         ResultActions result = mockMvc.perform(patch("/api/page/{date}", "2023-09-25")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(routineUpdates))
+                .content(objectMapper.writeValueAsString(itemUpdates))
         );
 
         result.andExpect(status().isBadRequest());
