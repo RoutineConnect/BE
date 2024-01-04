@@ -3,9 +3,7 @@ package com.team.routineconnect.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
-import com.team.routineconnect.dto.RoutineRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.EnumSet;
@@ -47,29 +45,29 @@ public class Item {
 
     @OneToOne
     @JoinColumn(name = "hour_id")
-    private Hour hour;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(updatable = false)
-    private Long id;
+    protected Hour hour;
     @JsonIgnore
     @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    protected User user;
     @Column(nullable = false)
-    private String title;
+    protected String title;
     //    일월화수목금토
 //    ________ 0 or 1
     @Convert(converter = EnumSetToBitmaskConverter.class)
     @Column(nullable = false)
-    private EnumSet<DayOfWeek> repeatingDays;
+    protected EnumSet<DayOfWeek> repeatingDays;
     @Column(nullable = false)
-    private Boolean shared;
+    protected Boolean shared;
     @Column(nullable = false)
-    private LocalDate createdDate;
+    protected LocalDate createdDate;
     @Column
-    private LocalDate endedDate;
+    protected LocalDate endedDate;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false)
+    private Long id;
 
 
     public Item(User user, String title, Hour hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared,
@@ -93,15 +91,5 @@ public class Item {
 
     public Boolean userIs(User user) {
         return this.user == user;
-    }
-
-    public void setRoutine(RoutineRequest request,
-                           EnumSetToBitmaskConverter enumSetToBitmaskConverter, ObjectMapper objectMapper) {
-        this.title = request.getTitle();
-        this.hour = request.getHour().toEntity(objectMapper);
-        this.repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
-        this.shared = request.getShared();
-        this.createdDate = request.getCreated_date();
-        this.endedDate = request.getEnded_date();
     }
 }

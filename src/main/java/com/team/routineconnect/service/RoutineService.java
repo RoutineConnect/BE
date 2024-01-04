@@ -51,8 +51,7 @@ public class RoutineService {
         LocalDate currentDate = request.getCreated_date();
         LocalDate lastDate = currentDate.plusDays(7);
 
-        Routine routine = routineRepository.save(
-                request.toEntity(user, enumSetToBitmaskConverter, objectMapper, hourRepository));
+        Routine routine = routineRepository.save(request.toEntity(user, enumSetToBitmaskConverter));
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -104,7 +103,7 @@ public class RoutineService {
             currentDate = currentDate.plusDays(1);
         }
 
-        routine.setRoutine(request, enumSetToBitmaskConverter, objectMapper);
+        routine.setRoutine(request, enumSetToBitmaskConverter);
     }
 
     /**
