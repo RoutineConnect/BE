@@ -1,5 +1,6 @@
 package com.team.routineconnect.repository;
 
+import static com.team.routineconnect.domain.QHour.hour1;
 import static com.team.routineconnect.domain.QItem.item;
 import static com.team.routineconnect.domain.QItemOrder.itemOrder;
 
@@ -83,10 +84,11 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
                                 .and(itemOrder.user.eq(user))
                                 .and(itemOrder.item.isNotNull()))
                         .innerJoin(item).on(itemOrder.item.eq(item))
+                        .innerJoin(hour1).on(itemOrder.item.hour.eq(hour1))
                         .fetchJoin().fetch()
                         .stream()
                         .map(tuple -> ItemResponse.builder()
-                                .hour(tuple.get(item.hour.hour))
+                                .hour(tuple.get(hour1.hour))
                                 .title(tuple.get(item.title))
                                 .position(tuple.get(itemOrder.position))
                                 .accomplishment(tuple.get(itemOrder.accomplishment))
