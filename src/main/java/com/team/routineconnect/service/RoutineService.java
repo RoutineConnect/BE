@@ -39,7 +39,7 @@ public class RoutineService {
     private final ObjectMapper objectMapper;
 
     public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
-        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date);
+        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateBefore(user, date);
     }
 
     public void setAccomplishment(User user, Long routineItemId, Boolean accomplishment) {
@@ -117,18 +117,20 @@ public class RoutineService {
      * @param itemUpdates Item id와 update할 position이 담긴 요청 DTO List
      */
     public void updateItemOrder(User user, LocalDate date, List<ItemUpdate> itemUpdates) {
+        DayOfWeek day = date.getDayOfWeek();
+
         for (ItemUpdate update : itemUpdates) {
             Item item = itemRepository.findById(update.getItem_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
             validate(item.userIs(user));
             Float updatePosition = update.getPosition();
 
-            ItemOrder itemOrder = itemOrderRepository.findTopByItemAndDateLessThanOrderByDateDesc(item, date)
+            ItemOrder itemOrder = itemOrderRepository.findTopByItemAndDayAndDateLessThanOrderByDateDesc(item, day, date)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine"));
             itemOrder.updatePositionTo(updatePosition);
             Float originalPosition = itemOrder.getPosition();
             List<ItemOrder> itemOrders = itemOrderRepository
-                    .findByItemAndDateAfterOrderByDate(item, date);
+                    .findByItemAndDayAndDateAfterOrderByDate(item, day, date);
 
             for (ItemOrder order : itemOrders) {
                 if (order.positionIs(originalPosition)) {
@@ -199,7 +201,7 @@ public class RoutineService {
     }
 
     public void updateAfterDateItemOrder(User user, Item item, LocalDate date, DayOfWeek day) {
-        List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateAfter(user, day, date);
+        List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateGreater(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
             float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime).get() + 1;

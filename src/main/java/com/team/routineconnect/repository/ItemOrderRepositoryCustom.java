@@ -2,7 +2,6 @@ package com.team.routineconnect.repository;
 
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,9 +14,9 @@ public interface ItemOrderRepositoryCustom {
 
     Optional<Float> findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date);
 
-    List<LocalDate> findDatesByUserAndDayAndDateAfter(User user, DayOfWeek day, LocalDate date);
+    List<LocalDate> findDatesByUserAndDayAndDateGreater(User user, DayOfWeek day, LocalDate date);
 
-    List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(User user, LocalDate date);
+    List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateBefore(User user, LocalDate date);
 
     Float findAchievementByUserAndDate(User user, LocalDate date);
 }

@@ -6,6 +6,7 @@ import com.team.routineconnect.domain.User;
 import com.team.routineconnect.dto.ItemUpdate;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.service.RoutineService;
+import io.swagger.annotations.ApiOperation;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,7 @@ public class RoutineController {
     private final RoutineService routineService;
 
     // 메인페이지 (개인 루틴) 조회
+    @ApiOperation("날짜별 루틴 조회")
     @GetMapping("/page/{date}")
     public ResponseEntity<List<ItemOrder>> getMemberRoutinesOnDate(
             @AuthenticationPrincipal User user,
@@ -51,6 +53,7 @@ public class RoutineController {
     }
 
     // 달성도 설정
+    @ApiOperation("달성도 설정")
     @PatchMapping("/page")
     public ResponseEntity<Void> setAccomplishment(
             @AuthenticationPrincipal User user,
@@ -61,6 +64,7 @@ public class RoutineController {
     }
 
     // 루틴 추가
+    @ApiOperation("루틴 추가")
     @PostMapping("/routine")
     public ResponseEntity<Void> addRoutine(
             @AuthenticationPrincipal User user, @Valid @RequestBody RoutineRequest request) {
@@ -69,6 +73,7 @@ public class RoutineController {
     }
 
     // 루틴 수정
+    @ApiOperation("루틴 수정")
     @PatchMapping("/routine")
     public ResponseEntity<Void> updateRoutine(
             @AuthenticationPrincipal User user,
@@ -79,6 +84,7 @@ public class RoutineController {
     }
 
     // 루틴 순서 변경
+    @ApiOperation("루틴 순서 변경")
     @PatchMapping("/page/{date}")
     public ResponseEntity<Void> updateRoutineOrder(
             @AuthenticationPrincipal User user,
@@ -91,6 +97,7 @@ public class RoutineController {
     }
 
     // 일자 별 달성도 표시 조회
+    @ApiOperation("일자별 달성도")
     @GetMapping("/achievement/{date}")
     public ResponseEntity<List<Float>> getAchievementsForWeek(
             @AuthenticationPrincipal User user,
@@ -101,6 +108,7 @@ public class RoutineController {
         return ResponseEntity.ok(achievements);
     }
 
+    @ApiOperation("시간목록 불러오기")
     @GetMapping("/hour")
     public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(routineService.getHours(user));
