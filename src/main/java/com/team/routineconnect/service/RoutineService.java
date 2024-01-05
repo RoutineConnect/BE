@@ -202,6 +202,7 @@ public class RoutineService {
         List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateAfter(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
+            @SuppressWarnings("OptionalGetWithoutIsPresent")
             float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime).get() + 1;
 
             ItemOrder itemOrder = ItemOrder.builder()
