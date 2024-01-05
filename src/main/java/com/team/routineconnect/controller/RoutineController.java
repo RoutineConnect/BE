@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -129,7 +128,8 @@ public class RoutineController {
         return new ResponseEntity<>(e.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
-                        DefaultMessageSourceResolvable::getDefaultMessage
+                        fieldError -> fieldError.getDefaultMessage() != null ? fieldError.getDefaultMessage()
+                                : "No error message"
                 )), HttpStatus.BAD_REQUEST);
     }
 }
