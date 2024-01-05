@@ -22,41 +22,41 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
 
     @Override
     public Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date) {
-        LocalDate maxDate = queryFactory
-                .select(itemOrder.date.max())
-                .from(itemOrder)
-                .where(itemOrder.day.eq(day)
-                        .and(itemOrder.date.loe(date))
-                        .and(itemOrder.user.eq(user)))
-                .fetchOne();
-
-        return Optional.ofNullable(maxDate);
+        return Optional.ofNullable(
+                queryFactory
+                        .select(itemOrder.date.max())
+                        .from(itemOrder)
+                        .where(itemOrder.day.eq(day)
+                                .and(itemOrder.date.loe(date))
+                                .and(itemOrder.user.eq(user)))
+                        .fetchOne()
+        );
     }
 
     @Override
     public Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date) {
-        LocalDate maxDate = queryFactory
-                .select(itemOrder.date.max())
-                .from(itemOrder)
-                .where(itemOrder.day.eq(day)
-                        .and(itemOrder.date.lt(date))
-                        .and(itemOrder.user.eq(user)))
-                .fetchOne();
-
-        return Optional.ofNullable(maxDate);
+        return Optional.ofNullable(
+                queryFactory
+                        .select(itemOrder.date.max())
+                        .from(itemOrder)
+                        .where(itemOrder.day.eq(day)
+                                .and(itemOrder.date.lt(date))
+                                .and(itemOrder.user.eq(user)))
+                        .fetchOne()
+        );
     }
 
     @Override
     public Optional<Float> findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date) {
-        Float maxPosition = queryFactory
-                .select(itemOrder.position.max())
-                .from(itemOrder)
-                .where(itemOrder.date.eq(date)
-                        .and(itemOrder.day.eq(day))
-                        .and(itemOrder.user.eq(user)))
-                .fetchOne();
-
-        return Optional.ofNullable(maxPosition);
+        return Optional.ofNullable(
+                queryFactory
+                        .select(itemOrder.position.max())
+                        .from(itemOrder)
+                        .where(itemOrder.date.eq(date)
+                                .and(itemOrder.day.eq(day))
+                                .and(itemOrder.user.eq(user)))
+                        .fetchOne()
+        );
     }
 
     @Override
@@ -71,26 +71,25 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateLessThan(User user, LocalDate date) {
+    public List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
-        Optional<LocalDate> maxDateOptional = findMaxDateByUserAndDayAndDateLessThan(user, day, date);
 
-        if (maxDateOptional.isPresent()) {
-            return queryFactory
-                    .selectFrom(itemOrder)
-                    .where(itemOrder.day.eq(day)
-                            .and(itemOrder.date.loe(maxDateOptional.get()))
-                            .and(itemOrder.user.eq(user))
-                            .and(itemOrder.item.isNotNull()))
-                    .fetch();
-        } else {
-            return Collections.emptyList();
-        }
+        return findMaxDateByUserAndDayAndDateLessThan(user, day, date)
+                .flatMap(maxDate -> Optional.of(
+                        queryFactory
+                                .selectFrom(itemOrder)
+                                .where(itemOrder.day.eq(day)
+                                        .and(itemOrder.date.eq(maxDate))
+                                        .and(itemOrder.user.eq(user))
+                                        .and(itemOrder.item.isNotNull()))
+                                .fetch()
+                ))
+                .orElse(Collections.emptyList());
     }
 
     @Override
     public Float findAchievementByUserAndDate(User user, LocalDate date) {
-        float totalRoutines = (float) findRoutinesByUserRoutineIsNotNullAndDateLessThan(user, date).size();
+        float totalRoutines = (float) findRoutinesByUserRoutineIsNotNullAndDate(user, date).size();
         float clearRoutines = (float) queryFactory
                 .select(Wildcard.count)
                 .from(itemOrder)

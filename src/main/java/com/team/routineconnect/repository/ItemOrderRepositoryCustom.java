@@ -16,7 +16,7 @@ public interface ItemOrderRepositoryCustom {
 
     List<LocalDate> findDatesByUserAndDayAndDateAfter(User user, DayOfWeek day, LocalDate date);
 
-    List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateLessThan(User user, LocalDate date);
+    List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDate(User user, LocalDate date);
 
     Float findAchievementByUserAndDate(User user, LocalDate date);
 }

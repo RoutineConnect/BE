@@ -39,7 +39,7 @@ public class RoutineService {
     private final ObjectMapper objectMapper;
 
     public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
-        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThan(user, date);
+        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDate(user, date);
     }
 
     public void setAccomplishment(User user, Long routineItemId, Boolean accomplishment) {
