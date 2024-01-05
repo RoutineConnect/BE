@@ -11,7 +11,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -23,29 +22,25 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date) {
-        return Optional.ofNullable(
-                queryFactory
-                        .select(itemOrder.date.max())
-                        .from(itemOrder)
-                        .where(itemOrder.day.eq(day)
-                                .and(itemOrder.date.loe(date))
-                                .and(itemOrder.user.eq(user)))
-                        .fetchOne()
-        );
+    public LocalDate findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date) {
+        return queryFactory
+                .select(itemOrder.date.max())
+                .from(itemOrder)
+                .where(itemOrder.day.eq(day)
+                        .and(itemOrder.date.loe(date))
+                        .and(itemOrder.user.eq(user)))
+                .fetchOne();
     }
 
     @Override
-    public Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date) {
-        return Optional.ofNullable(
-                queryFactory
-                        .select(itemOrder.date.max())
-                        .from(itemOrder)
-                        .where(itemOrder.day.eq(day)
-                                .and(itemOrder.date.lt(date))
-                                .and(itemOrder.user.eq(user)))
-                        .fetchOne()
-        );
+    public LocalDate findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date) {
+        return queryFactory
+                .select(itemOrder.date.max())
+                .from(itemOrder)
+                .where(itemOrder.day.eq(day)
+                        .and(itemOrder.date.lt(date))
+                        .and(itemOrder.user.eq(user)))
+                .fetchOne();
     }
 
     @Override
@@ -76,29 +71,28 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     @Override
     public List<ItemResponse> findRoutinesByUserRoutineIsNotNullAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
+        LocalDate maxDate = findMaxDateByUserAndDayAndDateLessThan(user, day, date);
 
-        return findMaxDateByUserAndDayAndDateLessThan(user, day, date)
-                .flatMap(maxDate -> Optional.of(
-                        queryFactory
-                                .select(itemOrder.item, itemOrder.position, itemOrder.accomplishment,
-                                        itemOrder.retrospective)
-                                .from(itemOrder)
-                                .where(itemOrder.day.eq(day)
-                                        .and(itemOrder.date.eq(maxDate))
-                                        .and(itemOrder.user.eq(user))
-                                        .and(itemOrder.item.isNotNull()))
-                                .innerJoin(item).on(itemOrder.item.eq(item))
-                                .fetchJoin().fetch()
-                                .stream()
-                                .map(tuple -> ItemResponse.builder()
-                                        .item(tuple.get(itemOrder.item))
-                                        .position(tuple.get(itemOrder.position))
-                                        .accomplishment(tuple.get(itemOrder.accomplishment))
-                                        .retrospective(tuple.get(itemOrder.retrospective))
-                                        .build())
-                                .collect(Collectors.toList())
-                ))
-                .orElse(Collections.emptyList());
+        return maxDate != null ?
+                queryFactory
+                        .select(itemOrder.item, itemOrder.position, itemOrder.accomplishment,
+                                itemOrder.retrospective)
+                        .from(itemOrder)
+                        .where(itemOrder.day.eq(day)
+                                .and(itemOrder.date.eq(maxDate))
+                                .and(itemOrder.user.eq(user))
+                                .and(itemOrder.item.isNotNull()))
+                        .innerJoin(item).on(itemOrder.item.eq(item))
+                        .fetchJoin().fetch()
+                        .stream()
+                        .map(tuple -> ItemResponse.builder()
+                                .item(tuple.get(itemOrder.item))
+                                .position(tuple.get(itemOrder.position))
+                                .accomplishment(tuple.get(itemOrder.accomplishment))
+                                .retrospective(tuple.get(itemOrder.retrospective))
+                                .build())
+                        .collect(Collectors.toList())
+                : Collections.emptyList();
     }
 
     @Override

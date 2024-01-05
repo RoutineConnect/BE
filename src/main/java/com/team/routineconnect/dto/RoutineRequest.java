@@ -8,7 +8,6 @@ import com.team.routineconnect.repository.HourRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.EnumSet;
-import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -50,14 +49,15 @@ public class RoutineRequest {
     }
 
     public Hour setHourWith(User user) {
-        return Optional.ofNullable(hour)
-                .flatMap(existingHour -> hourRepository.findByHourAndUser(existingHour, user))
-                .orElseGet(() -> hour != null ? hourRepository.save(
-                        Hour.builder()
-                                .hour(hour)
-                                .user(user)
-                                .build()
-                ) : null);
+        return hour != null ?
+                hourRepository.findByHourAndUser(hour, user)
+                        .orElseGet(() -> hourRepository.save(
+                                Hour.builder()
+                                        .hour(hour)
+                                        .user(user)
+                                        .build()
+                        ))
+                : null;
     }
 
 
