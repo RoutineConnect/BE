@@ -1,12 +1,12 @@
 package com.team.routineconnect.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.Item;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.ItemResponse;
 import com.team.routineconnect.dto.ItemUpdate;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.repository.HourRepository;
@@ -36,9 +36,8 @@ public class RoutineService {
     private final ItemOrderRepository itemOrderRepository;
     private final HourRepository hourRepository;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
-    private final ObjectMapper objectMapper;
 
-    public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
+    public List<ItemResponse> findRoutinesByUserOnDate(User user, LocalDate date) {
         return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDate(user, date);
     }
 

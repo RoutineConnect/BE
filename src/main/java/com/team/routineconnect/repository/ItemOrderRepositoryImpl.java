@@ -1,16 +1,18 @@
 package com.team.routineconnect.repository;
 
+import static com.team.routineconnect.domain.QItem.item;
 import static com.team.routineconnect.domain.QItemOrder.itemOrder;
 
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.ItemResponse;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -71,18 +73,29 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDate(User user, LocalDate date) {
+    public List<ItemResponse> findRoutinesByUserRoutineIsNotNullAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
 
         return findMaxDateByUserAndDayAndDateLessThan(user, day, date)
                 .flatMap(maxDate -> Optional.of(
                         queryFactory
-                                .selectFrom(itemOrder)
+                                .select(itemOrder.item, itemOrder.position, itemOrder.accomplishment,
+                                        itemOrder.retrospective)
+                                .from(itemOrder)
                                 .where(itemOrder.day.eq(day)
                                         .and(itemOrder.date.eq(maxDate))
                                         .and(itemOrder.user.eq(user))
                                         .and(itemOrder.item.isNotNull()))
-                                .fetch()
+                                .innerJoin(item).on(itemOrder.item.eq(item))
+                                .fetchJoin().fetch()
+                                .stream()
+                                .map(tuple -> ItemResponse.builder()
+                                        .item(tuple.get(itemOrder.item))
+                                        .position(tuple.get(itemOrder.position))
+                                        .accomplishment(tuple.get(itemOrder.accomplishment))
+                                        .retrospective(tuple.get(itemOrder.retrospective))
+                                        .build())
+                                .collect(Collectors.toList())
                 ))
                 .orElse(Collections.emptyList());
     }
