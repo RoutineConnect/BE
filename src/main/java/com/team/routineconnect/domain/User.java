@@ -1,14 +1,25 @@
 package com.team.routineconnect.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import javax.persistence.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -20,7 +31,7 @@ import java.util.stream.Collectors;
 public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
-    private Set<Hour> hours = new HashSet<>();
+    private final Set<Hour> hours = new HashSet<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
