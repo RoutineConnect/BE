@@ -79,7 +79,6 @@ public class RoutineService {
         EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         LocalDate currentDate = request.getCreated_date();
         LocalDate lastDate = currentDate.plusDays(7);
-        Optional<LocalDate> endDate = Optional.ofNullable(request.getEnded_date());
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -97,10 +96,13 @@ public class RoutineService {
                 itemOrderRepository.deleteByItemAndDayAndDateGreaterThan(routine, day, currentDate);
             }
 
-            if (endDate.isPresent() &&
-                    (currentDate.isEqual(endDate.get()) || currentDate.isAfter(endDate.get()))) {
-                removeRoutine(user, routine, currentDate, day);
-            }
+            LocalDate finalCurrentDate = currentDate;
+            Optional.ofNullable(request.getEnded_date())
+                    .ifPresent(endDate -> {
+                        if (finalCurrentDate.isEqual(endDate) || finalCurrentDate.isAfter(endDate)) {
+                            removeRoutine(user, routine, finalCurrentDate, day);
+                        }
+                    });
 
             currentDate = currentDate.plusDays(1);
         }
@@ -216,11 +218,10 @@ public class RoutineService {
     }
 
     public void removeRoutine(User user, Routine routine, LocalDate date, DayOfWeek day) {
-        itemOrderRepository
 //        해당 요일의 가장 최근 날짜
-                .findMaxDateByUserAndDayAndDateLessThan(user, day, date)
+        itemOrderRepository.findMaxDateByUserAndDayAndDateLessThan(user, day, date)
                 .ifPresent(latestDate -> {
-                    if (latestDate.equals(date)) {
+                    if (latestDate.isEqual(date)) {
                         itemOrderRepository.deleteByItemAndDate(routine, date);
                     } else {
                         List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemNot(user, latestDate,
