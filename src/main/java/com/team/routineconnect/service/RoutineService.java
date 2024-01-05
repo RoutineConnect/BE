@@ -162,25 +162,22 @@ public class RoutineService {
 
     public void updateBeforeDateItemOrder(User user, LocalDate date, DayOfWeek day) {
 //        해당 요일 전의 가장 최근 날짜
-        Optional<LocalDate> lastDateOptional = itemOrderRepository
-                .findMaxDateByUserAndDayAndDateBefore(user, day, date);
-
-        if (lastDateOptional.isPresent()) {
-            LocalDate latestDate = lastDateOptional.get();
-//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
-            List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user, latestDate);
-            for (ItemOrder itemOrder : itemOrders) {
-                ItemOrder newItemOrder = ItemOrder.builder()
-                        .user(user)
-                        .item(itemOrder.getItem())
-                        .date(date)
-                        .day(day)
-                        .position(itemOrder.getPosition())
-                        .accomplishment(itemOrder.getAccomplishment())
-                        .build();
-                itemOrderRepository.save(newItemOrder);
-            }
-        }
+        itemOrderRepository.findMaxDateByUserAndDayAndDateBefore(user, day, date)
+                .ifPresent(latestDate -> {
+                    List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user,
+                            latestDate);
+                    for (ItemOrder itemOrder : itemOrders) {
+                        ItemOrder newItemOrder = ItemOrder.builder()
+                                .user(user)
+                                .item(itemOrder.getItem())
+                                .date(date)
+                                .day(day)
+                                .position(itemOrder.getPosition())
+                                .accomplishment(itemOrder.getAccomplishment())
+                                .build();
+                        itemOrderRepository.save(newItemOrder);
+                    }
+                });
     }
 
     public void updateTodayItemOrder(User user, Item item, LocalDate date, DayOfWeek day) {
@@ -219,44 +216,42 @@ public class RoutineService {
     }
 
     public void removeRoutine(User user, Routine routine, LocalDate date, DayOfWeek day) {
+        itemOrderRepository
 //        해당 요일의 가장 최근 날짜
-        Optional<LocalDate> lastDateOptional = itemOrderRepository
-                .findMaxDateByUserAndDayAndDateLessThan(user, day, date);
-        LocalDate latestDate = lastDateOptional.orElse(date);
+                .findMaxDateByUserAndDayAndDateLessThan(user, day, date)
+                .ifPresent(latestDate -> {
+                    if (latestDate.equals(date)) {
+                        itemOrderRepository.deleteByItemAndDate(routine, date);
+                    } else {
+                        List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemNot(user, latestDate,
+                                routine);
 
-        if (lastDateOptional.isPresent()) {
-//            이전 기록이 오늘이면
-            if (date.equals(latestDate)) {
-                itemOrderRepository.deleteByItemAndDate(routine, date);
-            } else {
-                List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemNot(user, latestDate, routine);
+                        if (itemOrders.isEmpty()) {
+                            ItemOrder itemOrder = ItemOrder.builder()
+                                    .user(user)
+                                    .item(null)
+                                    .date(date)
+                                    .day(day)
+                                    .position(0f)
+                                    .build();
 
-                if (itemOrders.isEmpty()) {
-                    ItemOrder itemOrder = ItemOrder.builder()
-                            .user(user)
-                            .item(null)
-                            .date(date)
-                            .day(day)
-                            .position(0f)
-                            .build();
-
-                    itemOrderRepository.save(itemOrder);
-                }
+                            itemOrderRepository.save(itemOrder);
+                        }
 
 //                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
-                for (ItemOrder itemOrder : itemOrders) {
-                    ItemOrder newItemOrder = ItemOrder.builder()
-                            .user(user)
-                            .item(itemOrder.getItem())
-                            .date(date)
-                            .day(day)
-                            .position(itemOrder.getPosition())
-                            .accomplishment(itemOrder.getAccomplishment())
-                            .build();
-                    itemOrderRepository.save(newItemOrder);
-                }
-            }
-        }
+                        for (ItemOrder itemOrder : itemOrders) {
+                            ItemOrder newItemOrder = ItemOrder.builder()
+                                    .user(user)
+                                    .item(itemOrder.getItem())
+                                    .date(date)
+                                    .day(day)
+                                    .position(itemOrder.getPosition())
+                                    .accomplishment(itemOrder.getAccomplishment())
+                                    .build();
+                            itemOrderRepository.save(newItemOrder);
+                        }
+                    }
+                });
 
         itemOrderRepository.deleteAllByItemAndDayAndDateGreaterThan(routine, day, date);
     }
