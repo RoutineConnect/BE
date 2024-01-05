@@ -39,7 +39,7 @@ public class RoutineService {
     private final ObjectMapper objectMapper;
 
     public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
-        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateBefore(user, date);
+        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThan(user, date);
     }
 
     public void setAccomplishment(User user, Long routineItemId, Boolean accomplishment) {
@@ -164,7 +164,7 @@ public class RoutineService {
     public void updateBeforeDateItemOrder(User user, LocalDate date, DayOfWeek day) {
 //        해당 요일 전의 가장 최근 날짜
         Optional<LocalDate> lastDateOptional = itemOrderRepository
-                .findMaxDateByUserAndDayAndDateLessThan(user, day, date);
+                .findMaxDateByUserAndDayAndDateBefore(user, day, date);
 
         if (lastDateOptional.isPresent()) {
             LocalDate latestDate = lastDateOptional.get();
@@ -201,7 +201,7 @@ public class RoutineService {
     }
 
     public void updateAfterDateItemOrder(User user, Item item, LocalDate date, DayOfWeek day) {
-        List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateGreater(user, day, date);
+        List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateAfter(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
             float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime).get() + 1;
@@ -222,7 +222,7 @@ public class RoutineService {
     public void removeRoutine(User user, Routine routine, LocalDate date, DayOfWeek day) {
 //        해당 요일의 가장 최근 날짜
         Optional<LocalDate> lastDateOptional = itemOrderRepository
-                .findMaxDateByUserAndDayAndDateBefore(user, day, date);
+                .findMaxDateByUserAndDayAndDateLessThan(user, day, date);
         LocalDate latestDate = lastDateOptional.orElse(date);
 
         if (lastDateOptional.isPresent()) {
