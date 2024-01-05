@@ -20,7 +20,6 @@ public interface ItemOrderRepository extends JpaRepository<ItemOrder, Long>, Ite
 
     List<ItemOrder> findByUserAndDateOrderByPosition(User user, LocalDate date);
 
-    //
     List<ItemOrder> findByItemAndDayAndDateAfterOrderByDate(Item item, DayOfWeek day, LocalDate date);
 
     void deleteByItemAndDate(Item item, LocalDate date);
