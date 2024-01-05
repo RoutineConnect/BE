@@ -52,12 +52,12 @@ public class RoutineRequest {
     public Hour setHourWith(User user) {
         return Optional.ofNullable(hour)
                 .flatMap(existingHour -> hourRepository.findByHourAndUser(existingHour, user))
-                .orElseGet(() -> hourRepository.save(
+                .orElseGet(() -> hour != null ? hourRepository.save(
                         Hour.builder()
                                 .hour(hour)
                                 .user(user)
                                 .build()
-                ));
+                ) : null);
     }
 
 
