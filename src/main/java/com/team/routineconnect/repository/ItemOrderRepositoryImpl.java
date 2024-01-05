@@ -49,17 +49,18 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public Optional<Float> findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date) {
-        return Optional.ofNullable(
-                queryFactory
-                        .select(itemOrder.position.max())
-                        .from(itemOrder)
-                        .where(itemOrder.date.eq(date)
-                                .and(itemOrder.day.eq(day))
-                                .and(itemOrder.user.eq(user)))
-                        .fetchOne()
-        );
+    public double findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date) {
+        Double position = queryFactory
+                .select(itemOrder.position.max())
+                .from(itemOrder)
+                .where(itemOrder.date.eq(date)
+                        .and(itemOrder.day.eq(day))
+                        .and(itemOrder.user.eq(user)))
+                .fetchOne();
+
+        return position != null ? position : 0.0d;
     }
+
 
     @Override
     public List<LocalDate> findDatesByUserAndDayAndDateAfter(User user, DayOfWeek day, LocalDate date) {

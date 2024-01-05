@@ -19,7 +19,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +40,8 @@ public class RoutineService {
         return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDate(user, date);
     }
 
-    public void setAccomplishment(User user, Long routineItemId, Boolean accomplishment) {
-        ItemOrder itemOrder = itemOrderRepository.findById(routineItemId)
+    public void setAccomplishment(User user, Long itemId, Boolean accomplishment) {
+        ItemOrder itemOrder = itemOrderRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item order ID"));
         validate(user.equals(itemOrder.getUser()));
 
@@ -79,6 +78,7 @@ public class RoutineService {
         EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         LocalDate currentDate = request.getCreated_date();
         LocalDate lastDate = currentDate.plusDays(7);
+        LocalDate endDate = request.getEnded_date();
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -96,13 +96,10 @@ public class RoutineService {
                 itemOrderRepository.deleteByItemAndDayAndDateGreaterThan(routine, day, currentDate);
             }
 
-            LocalDate finalCurrentDate = currentDate;
-            Optional.ofNullable(request.getEnded_date())
-                    .ifPresent(endDate -> {
-                        if (finalCurrentDate.isEqual(endDate) || finalCurrentDate.isAfter(endDate)) {
-                            removeRoutine(user, routine, finalCurrentDate, day);
-                        }
-                    });
+            if (endDate != null &&
+                    (currentDate.isEqual(endDate)) || currentDate.isAfter(endDate)) {
+                removeRoutine(user, routine, currentDate, day);
+            }
 
             currentDate = currentDate.plusDays(1);
         }
@@ -124,12 +121,12 @@ public class RoutineService {
             Item item = itemRepository.findById(update.getItem_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
             validate(item.userIs(user));
-            Float updatePosition = update.getPosition();
+            Double updatePosition = update.getPosition();
 
             ItemOrder itemOrder = itemOrderRepository.findTopByItemAndDayAndDateLessThanOrderByDateDesc(item, day, date)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine"));
             itemOrder.updatePositionTo(updatePosition);
-            Float originalPosition = itemOrder.getPosition();
+            Double originalPosition = itemOrder.getPosition();
             List<ItemOrder> itemOrders = itemOrderRepository
                     .findByItemAndDayAndDateAfterOrderByDate(item, day, date);
 
@@ -183,8 +180,7 @@ public class RoutineService {
     }
 
     public void updateTodayItemOrder(User user, Item item, LocalDate date, DayOfWeek day) {
-        Float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, date)
-                .orElse(0f);
+        double position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, date);
 
         ItemOrder itemOrder = ItemOrder.builder()
                 .user(user)
@@ -203,7 +199,7 @@ public class RoutineService {
 
         for (LocalDate dateTime : afterDates) {
             @SuppressWarnings("OptionalGetWithoutIsPresent")
-            float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime).get() + 1;
+            double position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime) + 1;
 
             ItemOrder itemOrder = ItemOrder.builder()
                     .user(user)
@@ -234,7 +230,7 @@ public class RoutineService {
                                     .item(null)
                                     .date(date)
                                     .day(day)
-                                    .position(0f)
+                                    .position(0d)
                                     .build();
 
                             itemOrderRepository.save(itemOrder);

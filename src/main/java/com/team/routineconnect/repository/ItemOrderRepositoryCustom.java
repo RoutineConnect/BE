@@ -12,7 +12,7 @@ public interface ItemOrderRepositoryCustom {
 
     Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date);
 
-    Optional<Float> findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date);
+    double findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date);
 
     List<LocalDate> findDatesByUserAndDayAndDateAfter(User user, DayOfWeek day, LocalDate date);
 

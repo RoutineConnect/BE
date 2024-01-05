@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class ItemResponse {
     private Item item;
-    private Float position;
+    private Double position;
     private Boolean accomplishment;
     private String retrospective;
 }
