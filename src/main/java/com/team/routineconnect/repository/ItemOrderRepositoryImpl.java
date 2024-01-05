@@ -75,8 +75,8 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
 
         return maxDate != null ?
                 queryFactory
-                        .select(itemOrder.item, itemOrder.position, itemOrder.accomplishment,
-                                itemOrder.retrospective)
+                        .select(itemOrder.item.hour.hour, itemOrder.item.title, itemOrder.position,
+                                itemOrder.accomplishment, itemOrder.retrospective)
                         .from(itemOrder)
                         .where(itemOrder.day.eq(day)
                                 .and(itemOrder.date.eq(maxDate))
@@ -86,7 +86,8 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
                         .fetchJoin().fetch()
                         .stream()
                         .map(tuple -> ItemResponse.builder()
-                                .item(tuple.get(itemOrder.item))
+                                .hour(tuple.get(item.hour.hour))
+                                .title(tuple.get(item.title))
                                 .position(tuple.get(itemOrder.position))
                                 .accomplishment(tuple.get(itemOrder.accomplishment))
                                 .retrospective(tuple.get(itemOrder.retrospective))
