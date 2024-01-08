@@ -21,9 +21,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -38,7 +38,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Getter
 @Entity
 public class Item {
@@ -68,18 +68,6 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private Long id;
-
-
-    public Item(User user, String title, Hour hour, EnumSet<DayOfWeek> repeatingDays, Boolean shared,
-                LocalDate createdDate, LocalDate endedDate) {
-        this.user = user;
-        this.title = title;
-        this.hour = hour;
-        this.repeatingDays = repeatingDays;
-        this.shared = shared;
-        this.createdDate = createdDate;
-        this.endedDate = endedDate;
-    }
 
     public Boolean isSetTo(Object o) {
         return repeatingDays.contains(o);

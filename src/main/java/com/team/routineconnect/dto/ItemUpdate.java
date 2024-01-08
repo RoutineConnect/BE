@@ -12,5 +12,5 @@ public class ItemUpdate {
     @NotNull
     private Long item_id;
     @NotNull
-    private Float position;
+    private Double position;
 }

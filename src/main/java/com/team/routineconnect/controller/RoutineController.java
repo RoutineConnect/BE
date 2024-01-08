@@ -1,8 +1,8 @@
 package com.team.routineconnect.controller;
 
 import com.team.routineconnect.domain.Hour;
-import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.ItemResponse;
 import com.team.routineconnect.dto.ItemUpdate;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.service.RoutineService;
@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,13 +42,13 @@ public class RoutineController {
     // 메인페이지 (개인 루틴) 조회
     @ApiOperation("날짜별 루틴 조회")
     @GetMapping("/page/{date}")
-    public ResponseEntity<List<ItemOrder>> getMemberRoutinesOnDate(
+    public ResponseEntity<List<ItemResponse>> getMemberRoutinesOnDate(
             @AuthenticationPrincipal User user,
             @PathVariable
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate date) {
-        List<ItemOrder> routines = routineService.findRoutinesByUserOnDate(user, date);
-        return ResponseEntity.ok(routines);
+        List<ItemResponse> items = routineService.findRoutinesByUserOnDate(user, date);
+        return ResponseEntity.ok(items);
     }
 
     // 달성도 설정
@@ -129,7 +128,8 @@ public class RoutineController {
         return new ResponseEntity<>(e.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
-                        DefaultMessageSourceResolvable::getDefaultMessage
+                        fieldError -> fieldError.getDefaultMessage() != null ? fieldError.getDefaultMessage()
+                                : "No error message"
                 )), HttpStatus.BAD_REQUEST);
     }
 }

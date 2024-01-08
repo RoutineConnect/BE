@@ -1,12 +1,12 @@
 package com.team.routineconnect.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.routineconnect.converter.EnumSetToBitmaskConverter;
 import com.team.routineconnect.domain.Hour;
 import com.team.routineconnect.domain.Item;
 import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.Routine;
 import com.team.routineconnect.domain.User;
+import com.team.routineconnect.dto.ItemResponse;
 import com.team.routineconnect.dto.ItemUpdate;
 import com.team.routineconnect.dto.RoutineRequest;
 import com.team.routineconnect.repository.HourRepository;
@@ -19,7 +19,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +35,13 @@ public class RoutineService {
     private final ItemOrderRepository itemOrderRepository;
     private final HourRepository hourRepository;
     private final EnumSetToBitmaskConverter enumSetToBitmaskConverter;
-    private final ObjectMapper objectMapper;
 
-    public List<ItemOrder> findRoutinesByUserOnDate(User user, LocalDate date) {
-        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date);
+    public List<ItemResponse> findRoutinesByUserOnDate(User user, LocalDate date) {
+        return itemOrderRepository.findRoutinesByUserRoutineIsNotNullAndDate(user, date);
     }
 
-    public void setAccomplishment(User user, Long routineItemId, Boolean accomplishment) {
-        ItemOrder itemOrder = itemOrderRepository.findById(routineItemId)
+    public void setAccomplishment(User user, Long itemId, Boolean accomplishment) {
+        ItemOrder itemOrder = itemOrderRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item order ID"));
         validate(user.equals(itemOrder.getUser()));
 
@@ -80,7 +78,7 @@ public class RoutineService {
         EnumSet<DayOfWeek> repeatingDays = request.routineDayToEntityAttribute(enumSetToBitmaskConverter);
         LocalDate currentDate = request.getCreated_date();
         LocalDate lastDate = currentDate.plusDays(7);
-        Optional<LocalDate> endDate = Optional.ofNullable(request.getEnded_date());
+        LocalDate endDate = request.getEnded_date();
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -98,8 +96,8 @@ public class RoutineService {
                 itemOrderRepository.deleteByItemAndDayAndDateGreaterThan(routine, day, currentDate);
             }
 
-            if (endDate.isPresent() &&
-                    (currentDate.isEqual(endDate.get()) || currentDate.isAfter(endDate.get()))) {
+            if (endDate != null &&
+                    (currentDate.isEqual(endDate)) || currentDate.isAfter(endDate)) {
                 removeRoutine(user, routine, currentDate, day);
             }
 
@@ -117,18 +115,20 @@ public class RoutineService {
      * @param itemUpdates Item id와 update할 position이 담긴 요청 DTO List
      */
     public void updateItemOrder(User user, LocalDate date, List<ItemUpdate> itemUpdates) {
+        DayOfWeek day = date.getDayOfWeek();
+
         for (ItemUpdate update : itemUpdates) {
             Item item = itemRepository.findById(update.getItem_id())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine item ID"));
             validate(item.userIs(user));
-            Float updatePosition = update.getPosition();
+            Double updatePosition = update.getPosition();
 
-            ItemOrder itemOrder = itemOrderRepository.findTopByItemAndDateLessThanOrderByDateDesc(item, date)
+            ItemOrder itemOrder = itemOrderRepository.findTopByItemAndDayAndDateLessThanOrderByDateDesc(item, day, date)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid routine"));
             itemOrder.updatePositionTo(updatePosition);
-            Float originalPosition = itemOrder.getPosition();
+            Double originalPosition = itemOrder.getPosition();
             List<ItemOrder> itemOrders = itemOrderRepository
-                    .findByItemAndDateAfterOrderByDate(item, date);
+                    .findByItemAndDayAndDateAfterOrderByDate(item, day, date);
 
             for (ItemOrder order : itemOrders) {
                 if (order.positionIs(originalPosition)) {
@@ -161,13 +161,11 @@ public class RoutineService {
 
     public void updateBeforeDateItemOrder(User user, LocalDate date, DayOfWeek day) {
 //        해당 요일 전의 가장 최근 날짜
-        Optional<LocalDate> lastDateOptional = itemOrderRepository
-                .findMaxDateByUserAndDayAndDateLessThan(user, day, date);
+        LocalDate latestDate = itemOrderRepository.findMaxDateByUserAndDayAndDateBefore(user, day, date);
 
-        if (lastDateOptional.isPresent()) {
-            LocalDate latestDate = lastDateOptional.get();
-//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
-            List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user, latestDate);
+        if (latestDate != null) {
+            List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemIsNotNull(user,
+                    latestDate);
             for (ItemOrder itemOrder : itemOrders) {
                 ItemOrder newItemOrder = ItemOrder.builder()
                         .user(user)
@@ -183,8 +181,7 @@ public class RoutineService {
     }
 
     public void updateTodayItemOrder(User user, Item item, LocalDate date, DayOfWeek day) {
-        Float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, date)
-                .orElse(0f);
+        double position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, date);
 
         ItemOrder itemOrder = ItemOrder.builder()
                 .user(user)
@@ -202,7 +199,7 @@ public class RoutineService {
         List<LocalDate> afterDates = itemOrderRepository.findDatesByUserAndDayAndDateAfter(user, day, date);
 
         for (LocalDate dateTime : afterDates) {
-            float position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime).get() + 1;
+            double position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, dateTime) + 1;
 
             ItemOrder itemOrder = ItemOrder.builder()
                     .user(user)
@@ -219,16 +216,25 @@ public class RoutineService {
 
     public void removeRoutine(User user, Routine routine, LocalDate date, DayOfWeek day) {
 //        해당 요일의 가장 최근 날짜
-        Optional<LocalDate> lastDateOptional = itemOrderRepository
-                .findMaxDateByUserAndDayAndDateBefore(user, day, date);
-        LocalDate latestDate = lastDateOptional.orElse(date);
+        LocalDate latestDate = itemOrderRepository.findMaxDateByUserAndDayAndDateLessThan(user, day, date);
 
-        if (lastDateOptional.isPresent()) {
-//            이전 기록이 오늘이면
-            if (date.equals(latestDate)) {
+        if (latestDate != null) {
+            if (latestDate.isEqual(date)) {
                 itemOrderRepository.deleteByItemAndDate(routine, date);
             } else {
-                List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemNot(user, latestDate, routine);
+                List<ItemOrder> itemOrders = itemOrderRepository.findByUserAndDateAndItemNot(user, latestDate, routine)
+                        .stream().map(itemOrder -> {
+//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
+                            ItemOrder newItemOrder = ItemOrder.builder()
+                                    .user(user)
+                                    .item(itemOrder.getItem())
+                                    .date(date)
+                                    .day(day)
+                                    .position(itemOrder.getPosition())
+                                    .accomplishment(itemOrder.getAccomplishment())
+                                    .build();
+                            return itemOrderRepository.save(newItemOrder);
+                        }).collect(Collectors.toList());
 
                 if (itemOrders.isEmpty()) {
                     ItemOrder itemOrder = ItemOrder.builder()
@@ -236,23 +242,10 @@ public class RoutineService {
                             .item(null)
                             .date(date)
                             .day(day)
-                            .position(0f)
+                            .position(0d)
                             .build();
 
                     itemOrderRepository.save(itemOrder);
-                }
-
-//                이전 기록이 있으면 이전 기록을 현재 날짜로 가져오기
-                for (ItemOrder itemOrder : itemOrders) {
-                    ItemOrder newItemOrder = ItemOrder.builder()
-                            .user(user)
-                            .item(itemOrder.getItem())
-                            .date(date)
-                            .day(day)
-                            .position(itemOrder.getPosition())
-                            .accomplishment(itemOrder.getAccomplishment())
-                            .build();
-                    itemOrderRepository.save(newItemOrder);
                 }
             }
         }

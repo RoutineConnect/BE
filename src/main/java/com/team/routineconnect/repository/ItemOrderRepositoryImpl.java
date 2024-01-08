@@ -1,20 +1,20 @@
 package com.team.routineconnect.repository;
 
+import static com.team.routineconnect.domain.QHour.hour1;
+import static com.team.routineconnect.domain.QItem.item;
+import static com.team.routineconnect.domain.QItemOrder.itemOrder;
+
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.team.routineconnect.domain.Accomplishment;
-import com.team.routineconnect.domain.ItemOrder;
 import com.team.routineconnect.domain.User;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Repository;
-
+import com.team.routineconnect.dto.ItemResponse;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import static com.team.routineconnect.domain.QItemOrder.itemOrder;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @AllArgsConstructor
 @Repository
@@ -23,34 +23,30 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<LocalDate> findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date) {
-        LocalDate maxDate = queryFactory
+    public LocalDate findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date) {
+        return queryFactory
                 .select(itemOrder.date.max())
                 .from(itemOrder)
                 .where(itemOrder.day.eq(day)
                         .and(itemOrder.date.loe(date))
                         .and(itemOrder.user.eq(user)))
                 .fetchOne();
-
-        return Optional.ofNullable(maxDate);
     }
 
     @Override
-    public Optional<LocalDate> findMaxDateByUserAndDayAndDateLessThan(User user, DayOfWeek day, LocalDate date) {
-        LocalDate maxDate = queryFactory
+    public LocalDate findMaxDateByUserAndDayAndDateBefore(User user, DayOfWeek day, LocalDate date) {
+        return queryFactory
                 .select(itemOrder.date.max())
                 .from(itemOrder)
                 .where(itemOrder.day.eq(day)
                         .and(itemOrder.date.lt(date))
                         .and(itemOrder.user.eq(user)))
                 .fetchOne();
-
-        return Optional.ofNullable(maxDate);
     }
 
     @Override
-    public Optional<Float> findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date) {
-        Float maxPosition = queryFactory
+    public double findMaxPositionByUserAndDayAndDate(User user, DayOfWeek day, LocalDate date) {
+        Double position = queryFactory
                 .select(itemOrder.position.max())
                 .from(itemOrder)
                 .where(itemOrder.date.eq(date)
@@ -58,8 +54,9 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
                         .and(itemOrder.user.eq(user)))
                 .fetchOne();
 
-        return Optional.ofNullable(maxPosition);
+        return position != null ? position : 0.0d;
     }
+
 
     @Override
     public List<LocalDate> findDatesByUserAndDayAndDateAfter(User user, DayOfWeek day, LocalDate date) {
@@ -73,26 +70,37 @@ public class ItemOrderRepositoryImpl implements ItemOrderRepositoryCustom {
     }
 
     @Override
-    public List<ItemOrder> findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(User user, LocalDate date) {
+    public List<ItemResponse> findRoutinesByUserRoutineIsNotNullAndDate(User user, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
-        Optional<LocalDate> maxDateOptional = findMaxDateByUserAndDayAndDateBefore(user, day, date);
+        LocalDate maxDate = findMaxDateByUserAndDayAndDateLessThan(user, day, date);
 
-        if (maxDateOptional.isPresent()) {
-            return queryFactory
-                    .selectFrom(itemOrder)
-                    .where(itemOrder.day.eq(day)
-                            .and(itemOrder.date.loe(date))
-                            .and(itemOrder.user.eq(user))
-                            .and(itemOrder.item.isNotNull()))
-                    .fetch();
-        } else {
-            return Collections.emptyList();
-        }
+        return maxDate != null ?
+                queryFactory
+                        .select(itemOrder.item.hour.hour, itemOrder.item.title, itemOrder.position,
+                                itemOrder.accomplishment, itemOrder.retrospective)
+                        .from(itemOrder)
+                        .where(itemOrder.day.eq(day)
+                                .and(itemOrder.date.eq(maxDate))
+                                .and(itemOrder.user.eq(user))
+                                .and(itemOrder.item.isNotNull()))
+                        .innerJoin(item).on(itemOrder.item.eq(item))
+                        .innerJoin(hour1).on(itemOrder.item.hour.eq(hour1))
+                        .fetchJoin().fetch()
+                        .stream()
+                        .map(tuple -> ItemResponse.builder()
+                                .hour(tuple.get(hour1.hour))
+                                .title(tuple.get(item.title))
+                                .position(tuple.get(itemOrder.position))
+                                .accomplishment(tuple.get(itemOrder.accomplishment))
+                                .retrospective(tuple.get(itemOrder.retrospective))
+                                .build())
+                        .collect(Collectors.toList())
+                : Collections.emptyList();
     }
 
     @Override
     public Float findAchievementByUserAndDate(User user, LocalDate date) {
-        float totalRoutines = (float) findRoutinesByUserRoutineIsNotNullAndDateLessThanEqual(user, date).size();
+        float totalRoutines = (float) findRoutinesByUserRoutineIsNotNullAndDate(user, date).size();
         float clearRoutines = (float) queryFactory
                 .select(Wildcard.count)
                 .from(itemOrder)

@@ -52,18 +52,18 @@ public class ItemOrder {
     private DayOfWeek day;
 
     @Column(nullable = false)
-    private Float position;
+    private Double position;
 
     //    @Enumerated(EnumType.STRING)
     private Boolean accomplishment;
     @Column
     private String retrospective;
 
-    public Boolean positionIs(Float position) {
+    public Boolean positionIs(Double position) {
         return this.position.equals(position);
     }
 
-    public void updatePositionTo(Float newPosition) {
+    public void updatePositionTo(Double newPosition) {
         this.position = newPosition;
     }
 
