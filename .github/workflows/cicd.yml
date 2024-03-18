@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      APPLICATION_NAME: routine-connect
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Create document and build for merge to dev branch
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          ./gradlew asciidoctor
+          ./gradlew build -x test
+
+      - name: Build with Gradle for main branch and pull request for dev branch
+        if: github.ref == 'refs/heads/main' || github.base_ref == 'dev'
+        run: ./gradlew build
+
+      - name: Archive application
+        if: github.event_name == 'push'
+        run: |
+          mkdir temp
+          cp build/libs/*.jar appspec.yml temp/
+          mkdir temp/scripts
+          cp scripts/* temp/scripts
+          tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
+
+      - name: Configure AWS credentials
+        if: github.event_name == 'push'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{vars.AWS_REGION}}
+
+      - name: Upload to S3
+        if: github.event_name == 'push'
+        run: aws s3 cp --region ${{vars.AWS_REGION}} ./${{env.APPLICATION_NAME}}.tar.gz s3://${{vars.S3_BUCKET_NAME}}/deploy/
+
+      - name: Deploy with AWS CodeDeploy
+        if: github.event_name == 'push'
+        run: aws deploy create-deployment
+          --application-name ${{env.APPLICATION_NAME}}
+          --deployment-config-name CodeDeployDefault.OneAtATime
+          --deployment-group-name ${{env.APPLICATION_NAME}}-group
+          --s3-location bucket=${{vars.S3_BUCKET_NAME}},bundleType=tgz,key=deploy/${{env.APPLICATION_NAME}}.tar.gz

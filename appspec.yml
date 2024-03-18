@@ -1,0 +1,19 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /
+    destination: /home/ec2-user/routine-connect
+    overwrite: yes
+permissions:
+  - object: /
+    owner: ec2-user
+hooks:
+  AfterInstall:
+    - location: scripts/stop-server.sh
+      timeout: 60
+      runas: ec2-user
+  ApplicationStart:
+    - location: scripts/start-server.sh
+      timeout: 60
+      runas: ec2-user
