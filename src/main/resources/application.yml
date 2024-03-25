@@ -1,0 +1,47 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  datasource:
+    url: "jdbc:h2:mem:routine_connect;MODE=MYSQL;NON_KEYWORDS=USER,HOUR,DAY;DB_CLOSE_DELAY=-1"
+    username: "sa"
+    password: ""
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  redis:
+    host: localhost
+    port: 6379
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
+
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
+springboot:
+  jwt:
+    secret: "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArkgzz9mrm74xCsZaQuQtbrCIGfk2NaEymFf5UzKeL+O8QgrCLC9nbUHBHMjqQy3uiHm4+BMUjoSRhq6/1Qqvdpp1t6/WnLYafaZ2Iv4FTD49kvw52Drhw3ZdZMZBhAWIf8h0geG0g2AKnL2tW7bP40X3Y38uTcHAEKhCvPr30NS5ZB0/qWXMooxJ5J7aTiYgixS3lxSZv9VGG1tgbtc9qtYAvftEQnr/xWQWx26zAyqAvfc7oDUJfY+Ls5SZJ73N80w5md5AeeduEcCOtORGRJF8usySlhguMf8HWWPwvNMEeeJFT4kwwWwygbFWcd5Ai7OHAjyCITMRBvvo7AY5sPj+495pean06bXw93CO5VaRWFIRhUlmVhoJkf7PHEoXZcudyFBJ+lHb6R7+LDyc680/S/Qxh2R6/lukXTbJeAM3q/H0LNK95rbf6jjzZ06xVXG3e5SXYftbrpI7ImsKwvLSTEjOeasX5cP7PBn8DwmwHkcLAESeEVLpWe0sQstOhBGlqdyO6KCTG2wj8KNoVspD92brTrELcTRlNleY4DuvjG1jRvu7DaPH0tARbO0jmzuW+OzwrRaWBnn2DpACuYItUcO41kvjAgqVrzIrWvAGJeXc9hi8TGeIF+JqBp4MUNcCefpnBU7pXnp/h+o2tGMRP48W/feUcPVs7EiIe/cCAwEAAQ=="
+
+logging:
+  level:
+    sql: debug
+    org.hibernate.orm.jdbc.bind: trace
