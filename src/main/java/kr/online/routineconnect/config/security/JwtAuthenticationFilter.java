@@ -1,5 +1,7 @@
 package kr.online.routineconnect.config.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +23,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         var token = TokenUtil.resolveToken(request);
 
         if (token != null) {
-            var authentication = tokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            try {
+                var authentication = tokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (ExpiredJwtException e) {
+                request.setAttribute("exception", Error.EXPIRED_TOKEN);
+            } catch (JwtException | IllegalArgumentException e) {
+                request.setAttribute("exception", Error.OTHER_EXCEPTION);
+            }
         }
 
         doFilter(request, response, filterChain);
