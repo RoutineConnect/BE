@@ -1,5 +1,6 @@
 package kr.online.routineconnect.config.security;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +16,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
@@ -27,7 +26,7 @@ public class SecurityConfig {
             "/docs/**"
     };
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,7 +41,7 @@ public class SecurityConfig {
                         authorizeHttpRequests.requestMatchers(AUTH_WHITELIST).permitAll()
                                 .requestMatchers("/api/**").authenticated()
                                 .anyRequest().hasRole("ADMIN"))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                .addFilterBefore(new JwtAuthenticationFilter(tokenProvider),
                         UsernamePasswordAuthenticationFilter.class)
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .build();
