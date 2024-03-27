@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (ExpiredJwtException e) {
                 request.setAttribute("exception", Error.EXPIRED_TOKEN);
             } catch (JwtException | IllegalArgumentException e) {
-                request.setAttribute("exception", Error.OTHER_EXCEPTION);
+                request.setAttribute("exception", Error.BAD_TOKEN);
             }
         }
 
