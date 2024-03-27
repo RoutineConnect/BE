@@ -43,7 +43,7 @@ jwt:
     expiration-minute: 5
   refresh-token:
     secret: "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEApbD2MuKrh9nqYhR6LfeYlu6z2+N2h7dlvmFS7aAs1zYNAQWlDdBka9AoQo+4l8H82mA7GEJZzy4zM7n2+QTD8gmtaGoOpEgS03TzQxRmrH3KbBCadC53x7/0IhHYFDju8xfK9A7UTd9BqU9l2DOO2q1TBlerwBLfOLKq/0bws+jjMDHykhtAjWoLmmvfWf4v066aaOk/wc+IVu+h5+FOfhz2izPy2bUYv+eKvmktyOiBvjF/3GXWN5ijrg+tH/sUX3V3LWFIMIvtSMgzvOe3Kn1w8JLpc/jQoMsOK/DHLC6ou4ccCh6K7nVJ3K6Gm5OCtkEj/wfZkg53ftYDQl2LVtRi4uuVC7fO7jaZ9vZnXRFbLdQ6T3qoJaKoxB7ipRRdwGkPXCa/j9SkDT4xzeGa8NcBnvfzQq5Hh8sBfdSO9X2aMQJmKfdnb15mJVqyYOrZ6e0IGI1k2bloDttpKpGA4t2N0s0Y2Lufvkioop1NTVQelgh7g2eVlhrxVHzW0S8rbTh1saB0nenGtTxIlz9JKzDc+Pkz9KSsXvpTdx++ECF5jgOYIs0pJQGE1WbIn8L+v8Wa9oyhN2xVqC8UhA1EEFVtFQtSXfeofQx86F2UbsXz2waJQLQd3yNVKDOU0iiGxMLW5kY8+gKX+6CkdmNPkI1ZQWIkavhfH7V5ZE6g2l8CAwEAAQ=="
-    expiration-day: 1
+    expiration-hour: 1
 
 logging:
   level:

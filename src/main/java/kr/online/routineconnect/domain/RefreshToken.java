@@ -1,12 +1,11 @@
 package kr.online.routineconnect.domain;
 
+import java.util.concurrent.TimeUnit;
 import lombok.Builder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
-
-import java.util.concurrent.TimeUnit;
 
 @RedisHash("refreshToken")
 public class RefreshToken {
@@ -14,7 +13,7 @@ public class RefreshToken {
     @Id
     private String userEmail;
     private String refreshToken;
-    @Value("${jwt.refresh-token.expriation-time}")
+    @Value("${jwt.refresh-token.expiration-hour}")
     @TimeToLive(unit = TimeUnit.HOURS)
     private long expirationTime;
 
