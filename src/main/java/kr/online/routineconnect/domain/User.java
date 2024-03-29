@@ -7,12 +7,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class User extends BaseTimeEntity {
 
@@ -21,7 +22,17 @@ public class User extends BaseTimeEntity {
     private Long id;
     @Column(nullable = false, unique = true)
     private String email;
+    @Column(nullable = false, unique = true)
+    private String name;
     @Column(nullable = false)
     private String password;
     private List<GrantedAuthority> authorities;
+    
+    @Builder
+    public User(String email, String name, String password, List<GrantedAuthority> authorities) {
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.authorities = authorities;
+    }
 }
