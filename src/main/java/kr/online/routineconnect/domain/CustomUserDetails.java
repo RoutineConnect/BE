@@ -2,13 +2,13 @@ package kr.online.routineconnect.domain;
 
 import java.util.Collection;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
+@AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
     private User user;
