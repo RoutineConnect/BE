@@ -7,39 +7,36 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
+import kr.online.routineconnect.converter.AuthoritiesToStringConverter;
 import kr.online.routineconnect.domain.RefreshToken;
 import kr.online.routineconnect.dto.SignInResponse;
 import kr.online.routineconnect.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class TokenProvider {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthoritiesToStringConverter authoritiesToStringConverter;
     @Value("${jwt.access-token.secret}")
-    private final String accessTokenSecret;
+    private String accessTokenSecret;
     @Value("${jwt.refresh-token.secret}")
-    private final String refreshTokenSecret;
+    private String refreshTokenSecret;
     @Value("${jwt.access-token.expiration-minute}")
-    private final long accessTokenExpirationTime;
-    @Value("${jwt.refresh-token.expiration-day}")
-    private final long refreshTokenExpirationTime;
+    private long accessTokenExpirationTime;
+    @Value("${jwt.refresh-token.expiration-hour}")
+    private long refreshTokenExpirationTime;
     private SecretKey accessTokenKey;
     private SecretKey refreshTokenKey;
     private static final String AUTHORITIES = "authorities";
@@ -70,11 +67,7 @@ public class TokenProvider {
         var now = Instant.now();
 
         return Jwts.builder()
-                .claims(Map.of(AUTHORITIES,
-                        authorities.stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.joining(","))
-                ))
+                .claims(Map.of(AUTHORITIES, authoritiesToStringConverter.convertToDatabaseColumn(authorities)))
                 .subject(email)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(accessTokenExpirationTime, ChronoUnit.MINUTES)))
@@ -100,10 +93,7 @@ public class TokenProvider {
                 .parseSignedClaims(accessToken)
                 .getPayload();
 
-        var authorities = Arrays.stream(payload.get(AUTHORITIES, String.class).split(","))
-                .map(SimpleGrantedAuthority::new)
-                .toList();
-
+        var authorities = authoritiesToStringConverter.convertToEntityAttribute(payload.get(AUTHORITIES, String.class));
         var principal = new User(payload.getSubject(), null, authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, accessToken, authorities);
