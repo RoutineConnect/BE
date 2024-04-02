@@ -82,7 +82,7 @@ public class TokenProvider {
                 .subject(email)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(refreshTokenExpirationTime, ChronoUnit.HOURS)))
-                .signWith(accessTokenKey)
+                .signWith(refreshTokenKey)
                 .compact();
     }
 
