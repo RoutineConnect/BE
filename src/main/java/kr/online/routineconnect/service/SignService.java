@@ -33,7 +33,7 @@ public class SignService {
         return userRepository.existsByName(name) ? CheckDuplicatedResponse.ERROR : CheckDuplicatedResponse.SUCCESS;
     }
 
-    public Response signUp(SignUpRequest request) {
+    public Response signUp(SignUpRequest request) throws DuplicateKeyException {
         var email = request.email();
         var name = request.name();
         var emailCheck = checkUserEmailDuplicated(email);
