@@ -1,5 +1,6 @@
 package kr.online.routineconnect.service;
 
+import java.util.List;
 import kr.online.routineconnect.config.security.TokenProvider;
 import kr.online.routineconnect.domain.User;
 import kr.online.routineconnect.dto.CheckDuplicatedResponse;
@@ -11,6 +12,7 @@ import kr.online.routineconnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,6 +53,7 @@ public class SignService {
                 .email(email)
                 .name(name)
                 .password(passwordEncoder.encode(request.password()))
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
                 .build();
         userRepository.save(user);
 
