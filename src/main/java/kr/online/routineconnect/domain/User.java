@@ -1,11 +1,13 @@
 package kr.online.routineconnect.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.util.List;
+import kr.online.routineconnect.converter.AuthoritiesToStringConverter;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,8 +28,9 @@ public class User extends BaseTimeEntity {
     private String name;
     @Column(nullable = false)
     private String password;
+    @Convert(converter = AuthoritiesToStringConverter.class)
     private List<GrantedAuthority> authorities;
-    
+
     @Builder
     public User(String email, String name, String password, List<GrantedAuthority> authorities) {
         this.email = email;
