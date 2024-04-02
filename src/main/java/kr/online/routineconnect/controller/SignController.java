@@ -1,7 +1,10 @@
 package kr.online.routineconnect.controller;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import kr.online.routineconnect.config.security.Error;
 import kr.online.routineconnect.dto.CheckDuplicatedResponse;
 import kr.online.routineconnect.dto.Response;
 import kr.online.routineconnect.dto.SignInRequest;
@@ -57,5 +60,11 @@ public class SignController {
     @ExceptionHandler(DuplicateKeyException.class)
     ResponseEntity<Response> onDuplicateKeyException(DuplicateKeyException e) {
         return new ResponseEntity<>(Response.FAIL.setMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler({ExpiredJwtException.class, JwtException.class})
+    ResponseEntity<Error> onExpiredJwtException(Exception e) {
+        return new ResponseEntity<>(e instanceof ExpiredJwtException ? Error.EXPIRED_TOKEN : Error.BAD_TOKEN,
+                HttpStatus.UNAUTHORIZED);
     }
 }
