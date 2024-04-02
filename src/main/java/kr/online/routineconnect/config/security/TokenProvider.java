@@ -27,27 +27,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenProvider {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final AuthoritiesToStringConverter authoritiesToStringConverter;
-    @Value("${jwt.access-token.secret}")
-    private String accessTokenSecret;
-    @Value("${jwt.refresh-token.secret}")
-    private String refreshTokenSecret;
-    @Value("${jwt.access-token.expiration-minute}")
-    private long accessTokenExpirationTime;
-    @Value("${jwt.refresh-token.expiration-hour}")
-    private long refreshTokenExpirationTime;
-    private SecretKey accessTokenKey;
-    private SecretKey refreshTokenKey;
-    private static final String AUTHORITIES = "authorities";
+        private final RefreshTokenRepository refreshTokenRepository;
+        private final AuthoritiesToStringConverter authoritiesToStringConverter;
+        @Value("${jwt.access-token.secret}")
+        private String accessTokenSecret;
+        @Value("${jwt.refresh-token.secret}")
+        private String refreshTokenSecret;
+        @Value("${jwt.access-token.expiration-minute}")
+        private long accessTokenExpirationTime;
+        @Value("${jwt.refresh-token.expiration-hour}")
+        private long refreshTokenExpirationTime;
+        private SecretKey accessTokenKey;
+        private SecretKey refreshTokenKey;
+        private static final String AUTHORITIES = "authorities";
 
-    @PostConstruct
-    private void init() {
-        var keyBytes = Decoders.BASE64.decode(accessTokenSecret);
-        accessTokenKey = Keys.hmacShaKeyFor(keyBytes);
-        keyBytes = Decoders.BASE64.decode(refreshTokenSecret);
-        refreshTokenKey = Keys.hmacShaKeyFor(keyBytes);
-    }
+        @PostConstruct
+        private void init() {
+                var keyBytes = Decoders.BASE64.decode(accessTokenSecret);
+                accessTokenKey = Keys.hmacShaKeyFor(keyBytes);
+                keyBytes = Decoders.BASE64.decode(refreshTokenSecret);
+                refreshTokenKey = Keys.hmacShaKeyFor(keyBytes);
+        }
 
     public SignInResponse createTokens(String email, Collection<? extends GrantedAuthority> authorities) {
         var accessToken = createAccessToken(email, authorities);
@@ -66,36 +66,43 @@ public class TokenProvider {
     public String createAccessToken(String email, Collection<? extends GrantedAuthority> authorities) {
         var now = Instant.now();
 
-        return Jwts.builder()
-                .claims(Map.of(AUTHORITIES, authoritiesToStringConverter.convertToDatabaseColumn(authorities)))
-                .subject(email)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(accessTokenExpirationTime, ChronoUnit.MINUTES)))
-                .signWith(accessTokenKey)
-                .compact();
-    }
 
-    private String createRefreshToken(String email) {
-        var now = Instant.now();
+                    .claims(Map.of(AUTHORITIES, authoritiesToStringConverter.convertToDatabaseColumn(author
+                        .subject(email)
 
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(refreshTokenExpirationTime, ChronoUnit.HOURS)))
-                .signWith(refreshTokenKey)
-                .compact();
-    }
+                        .expiration(D
+                                .signWith(accessTokenKey)
+                                                
+                                .compact();
+                                
+                                
+                                ng createRefreshToken(Str
+                                = Instant.n
+        
 
-    public Authentication getAuthentication(String accessToken) throws JwtException, IllegalArgumentException {
-        var payload = Jwts.parser()
-                .verifyWith(accessTokenKey)
-                .build()
-                .parseSignedClaims(accessToken)
-                .getPayload();
+                    .claims(Map.of(AUTHORITIES, authoritiesToStringConverter.convertToDatabaseColumn(authorit
+                        .subject(email)
 
-        var authorities = authoritiesToStringConverter.convertToEntityAttribute(payload.get(AUTHORITIES, String.class));
-        var principal = new User(payload.getSubject(), null, authorities);
+                        .expiration(D
+                                .signWith(refreshTokenKey)
+                                                
+                                .compact();
+                                
+                                
+                                ntication getAuthenticatio
+                                oad = Jwts.
+         
 
-        return new UsernamePasswordAuthenticationToken(principal, accessToken, authorities);
-    }
-}
+                    .parseSignedClaims(accessToken)
+                        .getPayload();
+                                
+                                orities 
+                                cipal = new User(payload.getSub
+                                
+
+                
+                                
+                
+
+                
+        
