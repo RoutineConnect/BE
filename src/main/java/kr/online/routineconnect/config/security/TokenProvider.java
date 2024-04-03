@@ -56,6 +56,7 @@ public class TokenProvider {
         refreshTokenRepository.save(RefreshToken.builder()
                 .userEmail(email)
                 .refreshToken(refreshToken)
+                .expirationTime(refreshTokenExpirationTime)
                 .build());
 
         return SignInResponse.builder()
