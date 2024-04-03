@@ -41,7 +41,7 @@ public class SignService {
         var email = request.email();
         var name = request.name();
         var emailCheck = checkUserEmailDuplicated(email);
-        var nameCheck = checkUserEmailDuplicated(name);
+        var nameCheck = checkUserNameDuplicated(name);
 
         if (emailCheck.isDuplicated()) {
             throw new DuplicateKeyException("해당 이메일은 " + emailCheck.getMessage());
