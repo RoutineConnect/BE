@@ -1,17 +1,14 @@
 package kr.online.routineconnect.util;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.util.StringUtils;
 
 public class TokenUtil {
 
     public static final String TYPE = "Bearer";
-    private static final String TOKEN = "Authorization";
+    public static final String TOKEN = "Authorization";
 
-    public static String resolveToken(HttpServletRequest request) {
-        var token = request.getHeader(TOKEN);
-
-        if (StringUtils.hasText(token) && token.startsWith(TYPE)) {
+    public static String resolveToken(String token) {
+        if (StringUtils.hasText(token) && StringUtils.startsWithIgnoreCase(token, TYPE)) {
             return token.substring(TYPE.length() + 1);
         }
 

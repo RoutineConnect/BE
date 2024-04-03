@@ -20,7 +20,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        var token = TokenUtil.resolveToken(request);
+        var authorization = request.getHeader(TokenUtil.TOKEN);
+        var token = TokenUtil.resolveToken(authorization);
 
         if (token != null) {
             try {
@@ -31,6 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (JwtException | IllegalArgumentException e) {
                 request.setAttribute("exception", Error.BAD_TOKEN);
             }
+        } else {
+            request.setAttribute("exception", Error.BAD_TOKEN);
         }
 
         doFilter(request, response, filterChain);
