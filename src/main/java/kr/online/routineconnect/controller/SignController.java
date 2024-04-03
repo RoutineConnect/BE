@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import kr.online.routineconnect.config.security.Error;
 import kr.online.routineconnect.dto.CheckDuplicatedResponse;
+import kr.online.routineconnect.dto.RefreshAccessTokenRequest;
 import kr.online.routineconnect.dto.Response;
 import kr.online.routineconnect.dto.SignInRequest;
 import kr.online.routineconnect.dto.SignInResponse;
@@ -52,6 +53,11 @@ public class SignController {
         return ResponseEntity.ok(signService.signIn(request));
     }
 
+    @PostMapping("/access-token")
+    public ResponseEntity<SignInResponse> refreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequest request) {
+        return ResponseEntity.ok(signService.refreshAccessToken(request));
+    }
+
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
     ResponseEntity<Response> onBadCredentialsException(Exception e) {
         return new ResponseEntity<>(Response.SIGN_IN_FAIL, HttpStatus.UNAUTHORIZED);
@@ -62,7 +68,7 @@ public class SignController {
         return new ResponseEntity<>(Response.FAIL.setMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({ExpiredJwtException.class, JwtException.class})
+    @ExceptionHandler({ExpiredJwtException.class, JwtException.class, IllegalArgumentException.class})
     ResponseEntity<Error> onExpiredJwtException(Exception e) {
         return new ResponseEntity<>(e instanceof ExpiredJwtException ? Error.EXPIRED_TOKEN : Error.BAD_TOKEN,
                 HttpStatus.UNAUTHORIZED);

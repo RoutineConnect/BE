@@ -1,9 +1,11 @@
 package kr.online.routineconnect.service;
 
+import io.jsonwebtoken.JwtException;
 import java.util.List;
 import kr.online.routineconnect.config.security.TokenProvider;
 import kr.online.routineconnect.domain.User;
 import kr.online.routineconnect.dto.CheckDuplicatedResponse;
+import kr.online.routineconnect.dto.RefreshAccessTokenRequest;
 import kr.online.routineconnect.dto.Response;
 import kr.online.routineconnect.dto.SignInRequest;
 import kr.online.routineconnect.dto.SignInResponse;
@@ -70,5 +72,14 @@ public class SignService {
         }
 
         return tokenProvider.createTokens(email, user.getAuthorities());
+    }
+
+    public SignInResponse refreshAccessToken(RefreshAccessTokenRequest request)
+            throws JwtException, IllegalArgumentException {
+        if (request.grantType().equals("refresh_token")) {
+            return tokenProvider.refreshAccessToken(request.refreshToken());
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 }
