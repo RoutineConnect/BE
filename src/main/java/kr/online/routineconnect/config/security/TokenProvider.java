@@ -1,6 +1,5 @@
 package kr.online.routineconnect.config.security;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -111,7 +110,7 @@ public class TokenProvider {
         var payload = token.getPayload();
         var email = payload.getSubject();
         if (!refreshTokenRepository.existsById(email)) {
-            throw new ExpiredJwtException(token.getHeader(), (Claims) token, "만료된 리프레시 토큰입니다.");
+            throw new ExpiredJwtException(token.getHeader(), payload, "만료된 리프레시 토큰입니다.");
         }
 
         var authorities = authoritiesToStringConverter.convertToEntityAttribute(payload.get(AUTHORITIES, String.class));
