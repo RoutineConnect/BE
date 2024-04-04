@@ -1,0 +1,137 @@
+== 로그인/회원가입
+
+로그인 기능은 사용자가 시스템에 인증되도록 하는 기능입니다.
+
+=== 이메일중복체크
+
+제공된 이메일이 중복되지 않았는지 확인합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/이메일미중복/curl-request.adoc[]
+include::{snippets}/이메일미중복/http-request.adoc[]
+include::{snippets}/이메일미중복/httpie-request.adoc[]
+include::{snippets}/이메일미중복/query-parameters.adoc[]
+
+[discrete]
+==== 사용가능
+
+include::{snippets}/이메일미중복/http-response.adoc[]
+include::{snippets}/이메일미중복/response-body.adoc[]
+
+[discrete]
+==== 중복
+
+include::{snippets}/이메일중복/http-response.adoc[]
+include::{snippets}/이메일중복/response-body.adoc[]
+include::{snippets}/이메일중복/response-fields.adoc[]
+
+=== 이름중복체크
+
+제공된 이름이 중복되지 않았는지 확인합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/이름미중복/curl-request.adoc[]
+include::{snippets}/이름미중복/http-request.adoc[]
+include::{snippets}/이름미중복/httpie-request.adoc[]
+include::{snippets}/이름미중복/query-parameters.adoc[]
+
+[discrete]
+==== 사용가능
+
+include::{snippets}/이름미중복/http-response.adoc[]
+include::{snippets}/이름미중복/response-body.adoc[]
+
+[discrete]
+==== 중복
+
+include::{snippets}/이름중복/http-response.adoc[]
+include::{snippets}/이름중복/response-body.adoc[]
+include::{snippets}/이름중복/response-fields.adoc[]
+
+== 회원가입(User Signup)
+
+회원가입은 사용자가 시스템에 등록되어야 하는 기능입니다.
+
+=== 회원가입
+
+새로운 사용자를 시스템에 등록합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/회원가입/curl-request.adoc[]
+include::{snippets}/회원가입/http-request.adoc[]
+include::{snippets}/회원가입/httpie-request.adoc[]
+include::{snippets}/회원가입/request-body.adoc[]
+
+[discrete]
+==== 회원가입 성공
+
+include::{snippets}/회원가입/http-response.adoc[]
+include::{snippets}/회원가입/response-body.adoc[]
+
+[discrete]
+==== 이름중복으로 회원가입실패
+
+include::{snippets}/회원가입실패_이름중복/http-response.adoc[]
+include::{snippets}/회원가입실패_이름중복/response-body.adoc[]
+
+[discrete]
+==== 이메일중복으로 회원가입실패
+
+include::{snippets}/회원가입실패_이메일중복/http-response.adoc[]
+include::{snippets}/회원가입실패_이메일중복/response-body.adoc[]
+
+=== 로그인
+
+사용자가 제공한 이메일과 비밀번호를 사용하여 로그인을 시도합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/로그인/curl-request.adoc[]
+include::{snippets}/로그인/http-request.adoc[]
+include::{snippets}/로그인/httpie-request.adoc[]
+include::{snippets}/로그인/request-body.adoc[]
+include::{snippets}/로그인/request-fields.adoc[]
+
+[discrete]
+==== 로그인 성공
+
+include::{snippets}/로그인/http-response.adoc[]
+include::{snippets}/로그인/response-body.adoc[]
+include::{snippets}/로그인/response-fields.adoc[]
+
+[discrete]
+==== 로그인 실패
+
+include::{snippets}/로그인실패/http-response.adoc[]
+include::{snippets}/로그인실패/response-body.adoc[]
+include::{snippets}/로그인실패/response-fields.adoc[]
+
+=== 액세스 토큰 재발급
+
+리프레시 토큰을 이용해 액세스 토큰을 재발급합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/액세스토큰재발급성공/curl-request.adoc[]
+include::{snippets}/액세스토큰재발급성공/http-request.adoc[]
+include::{snippets}/액세스토큰재발급성공/httpie-request.adoc[]
+include::{snippets}/액세스토큰재발급성공/request-body.adoc[]
+include::{snippets}/액세스토큰재발급성공/request-fields.adoc[]
+
+==== 재발급 성공
+
+include::{snippets}/액세스토큰재발급성공/http-response.adoc[]
+include::{snippets}/액세스토큰재발급성공/response-body.adoc[]
+
+==== 재발급 성공
+
+include::{snippets}/액세스토큰재발급실패/http-response.adoc[]
+include::{snippets}/액세스토큰재발급실패/response-body.adoc[]
