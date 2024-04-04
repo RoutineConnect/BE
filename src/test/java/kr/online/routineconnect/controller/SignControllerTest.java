@@ -348,6 +348,12 @@ class SignControllerTest {
 
     @Test
     public void 액세스토큰재발급실패Test() throws Exception {
+        // 생성자에 접근하기 위해 Constructor 객체를 얻음
+        Constructor<DefaultClaims> constructor = DefaultClaims.class.getDeclaredConstructor();
+        // 생성자 접근 가능하도록 설정
+        constructor.setAccessible(true);
+        // 생성자 호출하여 인스턴스 생성
+        DefaultClaims defaultClaims = constructor.newInstance();
 
         RefreshAccessTokenRequest request = RefreshAccessTokenRequest.builder()
                 .grantType("refresh-token")
@@ -356,6 +362,7 @@ class SignControllerTest {
 
         given(signService.refreshAccessToken(any(RefreshAccessTokenRequest.class)))
                 .willThrow(
+                        new ExpiredJwtException(new DefaultJwsHeader(Collections.emptyMap()), defaultClaims,
                                 "만료된 리프레시 토큰입니다."
                         ));
 
