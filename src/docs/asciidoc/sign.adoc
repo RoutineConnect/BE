@@ -1,6 +1,4 @@
-== 중복 체크
-
-로그인 기능은 사용자가 시스템에 인증되도록 하는 기능입니다.
+== 인증
 
 === 이메일 중복 체크
 
@@ -51,10 +49,6 @@ include::{snippets}/이름미중복/response-body.adoc[]
 include::{snippets}/이름중복/http-response.adoc[]
 include::{snippets}/이름중복/response-body.adoc[]
 include::{snippets}/이름중복/response-fields.adoc[]
-
-== 인증
-
-회원가입은 사용자가 시스템에 등록되어야 하는 기능입니다.
 
 === 회원가입
 
