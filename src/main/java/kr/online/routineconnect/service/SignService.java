@@ -76,10 +76,10 @@ public class SignService {
 
     public SignInResponse refreshAccessToken(RefreshAccessTokenRequest request)
             throws JwtException, IllegalArgumentException {
-        if (request.grantType().equals("refresh_token")) {
-            return tokenProvider.refreshAccessToken(request.refreshToken());
-        } else {
+        if (!request.grantType().equals("refresh_token")) {
             throw new IllegalArgumentException();
         }
+
+        return tokenProvider.refreshAccessToken(request.refreshToken());
     }
 }
