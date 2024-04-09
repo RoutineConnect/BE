@@ -97,6 +97,8 @@ include::{snippets}/로그인/request-fields.adoc[]
 ==== 로그인 성공
 
 include::{snippets}/로그인/http-response.adoc[]
+include::{snippets}/로그인/response-headers.adoc[]
+include::{snippets}/로그인/response-cookies.adoc[]
 include::{snippets}/로그인/response-body.adoc[]
 include::{snippets}/로그인/response-fields.adoc[]
 
@@ -117,17 +119,20 @@ include::{snippets}/로그인실패/response-fields.adoc[]
 include::{snippets}/액세스토큰재발급성공/curl-request.adoc[]
 include::{snippets}/액세스토큰재발급성공/http-request.adoc[]
 include::{snippets}/액세스토큰재발급성공/httpie-request.adoc[]
-include::{snippets}/액세스토큰재발급성공/request-body.adoc[]
-include::{snippets}/액세스토큰재발급성공/request-fields.adoc[]
+include::{snippets}/액세스토큰재발급성공/request-cookies.adoc[]
 
 [discrete]
 ==== 재발급 성공
 
 include::{snippets}/액세스토큰재발급성공/http-response.adoc[]
+include::{snippets}/액세스토큰재발급성공/response-headers.adoc[]
+include::{snippets}/액세스토큰재발급성공/response-cookies.adoc[]
 include::{snippets}/액세스토큰재발급성공/response-body.adoc[]
+include::{snippets}/액세스토큰재발급성공/response-fields.adoc[]
 
 [discrete]
 ==== 재발급 실패
 
 include::{snippets}/액세스토큰재발급실패/http-response.adoc[]
 include::{snippets}/액세스토큰재발급실패/response-body.adoc[]
+include::{snippets}/액세스토큰재발급실패/response-fields.adoc[]
