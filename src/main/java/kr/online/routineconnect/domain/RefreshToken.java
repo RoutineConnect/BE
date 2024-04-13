@@ -1,6 +1,5 @@
 package kr.online.routineconnect.domain;
 
-import java.util.concurrent.TimeUnit;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -15,7 +14,7 @@ public class RefreshToken {
     @Id
     private String userEmail;
     private String refreshToken;
-    @TimeToLive(unit = TimeUnit.HOURS)
+    @TimeToLive
     private long expirationTime;
 
     @Builder

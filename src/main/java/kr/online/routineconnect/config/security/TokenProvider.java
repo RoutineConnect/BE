@@ -6,11 +6,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.crypto.SecretKey;
 import kr.online.routineconnect.converter.AuthoritiesToStringConverter;
 import kr.online.routineconnect.domain.RefreshToken;
@@ -56,7 +58,7 @@ public class TokenProvider {
         refreshTokenRepository.save(RefreshToken.builder()
                 .userEmail(email)
                 .refreshToken(refreshToken)
-                .expirationTime(refreshTokenExpirationTime)
+                .expirationTime(TimeUnit.HOURS.toSeconds(refreshTokenExpirationTime))
                 .build());
 
         return SignInResponse.builder()
@@ -89,6 +91,19 @@ public class TokenProvider {
                 .compact();
     }
 
+    private String createRefreshToken(String email, Collection<? extends GrantedAuthority> authorities,
+                                      Date expiration) {
+        var now = Instant.now();
+
+        return Jwts.builder()
+                .claims(Map.of(AUTHORITIES, authoritiesToStringConverter.convertToDatabaseColumn(authorities)))
+                .subject(email)
+                .issuedAt(Date.from(now))
+                .expiration(expiration)
+                .signWith(refreshTokenKey)
+                .compact();
+    }
+
     public Authentication getAuthentication(String accessToken) throws JwtException, IllegalArgumentException {
         var payload = Jwts.parser()
                 .verifyWith(accessTokenKey)
@@ -114,11 +129,21 @@ public class TokenProvider {
             throw new ExpiredJwtException(token.getHeader(), payload, "만료된 리프레시 토큰입니다.");
         }
 
+        refreshTokenRepository.deleteById(email);
         var authorities = authoritiesToStringConverter.convertToEntityAttribute(payload.get(AUTHORITIES, String.class));
+        var expiration = payload.getExpiration();
         var accessToken = createAccessToken(email, authorities);
+        var newRefreshToken = createRefreshToken(email, authorities, expiration);
+        refreshTokenRepository.save(RefreshToken.builder()
+                .userEmail(email)
+                .refreshToken(refreshToken)
+                .expirationTime(
+                        Duration.between(Instant.now(), expiration.toInstant()).getSeconds())
+                .build());
 
         return SignInResponse.builder()
                 .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
                 .build();
     }
 }
