@@ -2,22 +2,29 @@ package kr.online.routineconnect.controller;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import java.time.Duration;
 import kr.online.routineconnect.config.security.Error;
 import kr.online.routineconnect.dto.CheckDuplicatedResponse;
-import kr.online.routineconnect.dto.RefreshAccessTokenRequest;
 import kr.online.routineconnect.dto.Response;
 import kr.online.routineconnect.dto.SignInRequest;
 import kr.online.routineconnect.dto.SignInResponse;
 import kr.online.routineconnect.dto.SignUpRequest;
 import kr.online.routineconnect.service.SignService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SignController {
 
     private final SignService signService;
+    @Value("${jwt.refresh-token.expiration-hour}")
+    private long refreshTokenExpirationTime;
 
     @GetMapping("/check-user-email")
     public ResponseEntity<CheckDuplicatedResponse> checkUserEmailDuplicated(@NotBlank @RequestParam String email) {
@@ -50,12 +59,31 @@ public class SignController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<SignInResponse> signIn(@Valid @RequestBody SignInRequest request) {
-        return ResponseEntity.ok(signService.signIn(request));
+        var response = signService.signIn(request);
+        var refreshToken = response.getRefreshToken();
+        var cookie = ResponseCookie.from("refresh-token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .maxAge(Duration.ofHours(refreshTokenExpirationTime))
+                .build().toString();
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie).body(response);
     }
 
     @PostMapping("/access-token")
-    public ResponseEntity<SignInResponse> refreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequest request) {
-        return ResponseEntity.ok(signService.refreshAccessToken(request));
+    public ResponseEntity<SignInResponse> refreshAccessToken(HttpServletResponse httpServletResponse,
+                                                             @CookieValue("refresh-token") Cookie cookie) {
+        var response = signService.refreshAccessToken(cookie.getValue());
+        var refreshToken = response.getRefreshToken();
+        var newCookie = new Cookie("refresh-token", refreshToken);
+        newCookie.setHttpOnly(true);
+        newCookie.setSecure(true);
+        newCookie.setAttribute("SameSite", "None");
+        newCookie.setAttribute("Expires", cookie.getAttribute("Expires"));
+        httpServletResponse.addCookie(newCookie);
+
+        return ResponseEntity.ok(response);
     }
 
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
@@ -72,5 +100,10 @@ public class SignController {
     ResponseEntity<Error> onExpiredJwtException(Exception e) {
         return new ResponseEntity<>(e instanceof ExpiredJwtException ? Error.EXPIRED_TOKEN : Error.BAD_TOKEN,
                 HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    ResponseEntity<Response> onMissingRequestCookieException(MissingRequestCookieException e) {
+        return new ResponseEntity<>(Response.FAIL.setMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }
