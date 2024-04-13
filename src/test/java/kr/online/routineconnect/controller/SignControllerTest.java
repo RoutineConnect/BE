@@ -4,6 +4,11 @@ import static kr.online.routineconnect.ApiDocumentUtils.getDocumentRequest;
 import static kr.online.routineconnect.ApiDocumentUtils.getDocumentResponse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
+import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
+import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -19,11 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.impl.DefaultJwsHeader;
+import jakarta.servlet.http.Cookie;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import kr.online.routineconnect.config.ObjectMapperConfig;
 import kr.online.routineconnect.dto.CheckDuplicatedResponse;
-import kr.online.routineconnect.dto.RefreshAccessTokenRequest;
 import kr.online.routineconnect.dto.Response;
 import kr.online.routineconnect.dto.SignInRequest;
 import kr.online.routineconnect.dto.SignInResponse;
@@ -280,8 +285,13 @@ class SignControllerTest {
                         ),
                         responseFields(
                                 fieldWithPath("access_token").type(JsonFieldType.STRING).description("액세스 토큰"),
-                                fieldWithPath("refresh_token").type(JsonFieldType.STRING).description("리프레시 토큰"),
                                 fieldWithPath("type").type(JsonFieldType.STRING).description("액세스 토큰 타입")
+                        ),
+                        responseHeaders(
+                                headerWithName("Set-cookie").description("리프레시 토큰 쿠키 설정")
+                        ),
+                        responseCookies(
+                                cookieWithName("refresh-token").description("리프레시 토큰")
                         )
                 ));
     }
@@ -313,35 +323,41 @@ class SignControllerTest {
 
     @Test
     public void 액세스토큰재발급성공Test() throws Exception {
-        RefreshAccessTokenRequest request = RefreshAccessTokenRequest.builder()
-                .grantType("refresh-token")
-                .refreshToken("refresh-token.stored.in-client")
-                .build();
+        var requestCookie = new Cookie("refresh-token", "refresh-token.stored.in-client");
+        requestCookie.setHttpOnly(true);
+        requestCookie.setSecure(true);
+        requestCookie.setAttribute("SameSite", "None");
+        requestCookie.setAttribute("Expires", "Expiry");
 
         SignInResponse response = SignInResponse.builder()
                 .accessToken("reissued.access-token.with-refresh-token")
+                .refreshToken("reissued.refresh-token.with-same-expiry")
                 .build();
 
-        given(signService.refreshAccessToken(any(RefreshAccessTokenRequest.class)))
+        given(signService.refreshAccessToken(any(String.class)))
                 .willReturn(response);
 
         var result = this.mockMvc.perform(
-                post(API_PREFIX + "/access-token").content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON));
+                post(API_PREFIX + "/access-token")
+                        .cookie(requestCookie));
 
         result.andExpect(status().isOk())
                 .andDo(document("액세스토큰재발급성공",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestFields(
-                                fieldWithPath("grant_type").type(JsonFieldType.STRING).description("그랜트 타입"),
-                                fieldWithPath("refresh_token").type(JsonFieldType.STRING).description("리프레시 토큰")
+                        requestCookies(
+                                cookieWithName("refresh-token").description("리프레시 토큰")
                         ),
                         responseFields(
                                 fieldWithPath("access_token").type(JsonFieldType.STRING)
                                         .description("재발급된 액세스 토큰"),
                                 fieldWithPath("type").type(JsonFieldType.STRING).description("액세스 토큰 타입")
+                        ),
+                        responseHeaders(
+                                headerWithName("Set-cookie").description("재발급된 리프레시 토큰 쿠키 설정")
+                        ),
+                        responseCookies(
+                                cookieWithName("refresh-token").description("리프레시 토큰")
                         )
                 ));
     }
@@ -354,30 +370,28 @@ class SignControllerTest {
         constructor.setAccessible(true);
         // 생성자 호출하여 인스턴스 생성
         DefaultClaims defaultClaims = constructor.newInstance();
+        var requestCookie = new Cookie("refresh-token", "refresh-token.stored.in-client");
+        requestCookie.setHttpOnly(true);
+        requestCookie.setSecure(true);
+        requestCookie.setAttribute("SameSite", "None");
+        requestCookie.setAttribute("Expires", "Expiry");
 
-        RefreshAccessTokenRequest request = RefreshAccessTokenRequest.builder()
-                .grantType("refresh-token")
-                .refreshToken("refresh-token.stored.in-client")
-                .build();
-
-        given(signService.refreshAccessToken(any(RefreshAccessTokenRequest.class)))
+        given(signService.refreshAccessToken(any(String.class)))
                 .willThrow(
                         new ExpiredJwtException(new DefaultJwsHeader(Collections.emptyMap()), defaultClaims,
                                 "만료된 리프레시 토큰입니다."
                         ));
 
         var result = this.mockMvc.perform(
-                post(API_PREFIX + "/access-token").content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON));
+                post(API_PREFIX + "/access-token")
+                        .cookie(requestCookie));
 
         result.andExpect(status().isUnauthorized())
                 .andDo(document("액세스토큰재발급실패",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestFields(
-                                fieldWithPath("grant_type").type(JsonFieldType.STRING).description("그랜트 타입"),
-                                fieldWithPath("refresh_token").type(JsonFieldType.STRING).description("리프레시 토큰")
+                        requestCookies(
+                                cookieWithName("refresh-token").description("리프레시 토큰")
                         ),
                         responseFields(
                                 fieldWithPath("message").type(JsonFieldType.STRING)
