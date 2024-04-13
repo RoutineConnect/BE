@@ -22,10 +22,13 @@ repositories {
     mavenCentral()
 }
 
+val querydslDir: Provider<Directory> = layout.buildDirectory.dir("/generated/querydsl")
 val snippetsDir by extra { file("build/generated-snippets") }
 val asciidoctorExt: Configuration by configurations.creating
 
 dependencies {
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("org.projectlombok:lombok-mapstruct-binding:0.2.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
@@ -33,13 +36,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.security:spring-security-test")
     implementation("com.github.codemonstur:embedded-redis:1.4.3")
+    implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")
     implementation("io.jsonwebtoken:jjwt-impl:0.12.3")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
     annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+    annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
