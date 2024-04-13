@@ -6,7 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import kr.online.routineconnect.converter.AuthoritiesToStringConverter;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,6 +33,8 @@ public class User extends BaseTimeEntity {
     private String password;
     @Convert(converter = AuthoritiesToStringConverter.class)
     private List<GrantedAuthority> authorities;
+    @OneToMany(mappedBy = "user")
+    private final Set<Hour> hours = new HashSet<>();
 
     @Builder
     public User(String email, String name, String password, List<GrantedAuthority> authorities) {
