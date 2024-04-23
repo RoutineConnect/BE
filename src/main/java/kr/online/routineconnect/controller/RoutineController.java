@@ -1,0 +1,49 @@
+package kr.online.routineconnect.controller;
+
+import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+import kr.online.routineconnect.domain.CustomUserDetails;
+import kr.online.routineconnect.domain.Hour;
+import kr.online.routineconnect.domain.Routine;
+import kr.online.routineconnect.dto.ItemResponse;
+import kr.online.routineconnect.dto.ItemUpdate;
+import kr.online.routineconnect.dto.Response;
+import kr.online.routineconnect.dto.RoutineRequest;
+import kr.online.routineconnect.service.RoutineService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequiredArgsConstructor
+@Validated
+@RequestMapping("/api")
+@RestController
+public class RoutineController {
+
+    private final RoutineService routineService;
+
+    // 메인페이지 (개인 루틴) 조회
+    @GetMapping("/page/{date}")
+    public ResponseEntity<List<ItemResponse>> getMemberItemsOnDate(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @PathVariable LocalDate date) {
+        List<ItemResponse> items = routineService.findItemsByUserOnDate(user, date);
+        return ResponseEntity.ok(items);
+    }
+}
