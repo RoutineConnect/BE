@@ -168,10 +168,10 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public Set<Hour> getHours(CustomUserDetails userDetails) {
+    public Set<String> getHours(CustomUserDetails userDetails) {
         Set<Hour> hours = hourRepository.findByUserIsNull();
         hours.addAll(userDetails.getUser().getHours());
-        return hours.stream()
+        return hours.stream().map(Hour::getHour)
                 .limit(Hour.MAX_HOURS)
                 .collect(Collectors.toSet());
     }

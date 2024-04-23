@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import kr.online.routineconnect.domain.CustomUserDetails;
-import kr.online.routineconnect.domain.Hour;
 import kr.online.routineconnect.domain.Routine;
 import kr.online.routineconnect.dto.ItemResponse;
 import kr.online.routineconnect.dto.ItemUpdate;
@@ -99,7 +98,7 @@ public class RoutineController {
     }
 
     @GetMapping("/hour")
-    public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<Set<String>> getUserHours(@AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(routineService.getHours(user));
     }
 
