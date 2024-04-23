@@ -112,7 +112,7 @@ public class TokenProvider {
                 .getPayload();
 
         var authorities = authoritiesToStringConverter.convertToEntityAttribute(payload.get(AUTHORITIES, String.class));
-        var principal = new User(payload.getSubject(), null, authorities);
+        var principal = new User(payload.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, accessToken, authorities);
     }
