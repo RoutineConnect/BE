@@ -46,4 +46,14 @@ public class RoutineController {
         List<ItemResponse> items = routineService.findItemsByUserOnDate(user, date);
         return ResponseEntity.ok(items);
     }
+
+    // 달성도 설정
+    @PatchMapping("/page")
+    public ResponseEntity<Response> setAccomplishment(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam Long item_order_id,
+            @RequestParam Boolean accomplishment) {
+        routineService.setAccomplishment(user, item_order_id, accomplishment);
+        return ResponseEntity.ok(Response.SUCCESS);
+    }
 }

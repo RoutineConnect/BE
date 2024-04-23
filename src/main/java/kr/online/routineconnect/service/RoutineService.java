@@ -45,4 +45,23 @@ public class RoutineService {
         return itemOrderRepository.findItemsByUserAndDate(userDetails.getUser(), date);
     }
 
+    public void setAccomplishment(CustomUserDetails userDetails, Long itemOrderId, Boolean accomplishment)
+            throws IllegalArgumentException {
+        var user = userDetails.getUser();
+        ItemOrder itemOrder = itemOrderRepository.findById(itemOrderId)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 ItemOrder ID 입니다."));
+        validate(user.equals(itemOrder.getUser()));
+
+        accomplishmentRepository.findByItemOrder(itemOrder)
+                .ifPresentOrElse(
+                        accomplish -> accomplish.setAccomplishment(accomplishment),
+                        () -> accomplishmentRepository.save(Accomplishment.builder()
+                                .user(user)
+                                .itemOrder(itemOrder)
+                                .date(itemOrder.getDate())
+                                .accomplishment(accomplishment)
+                                .build())
+                );
+    }
+
 }
