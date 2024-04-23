@@ -104,7 +104,7 @@ public class RoutineService {
             DayOfWeek day = currentDate.getDayOfWeek();
 
             if (!repeatingDays.contains(day) && routine.isSetOn(day)) {
-                removeItemOrder(userDetails, routineId, currentDate);
+                removeItemOrder(routine, day, currentDate);
             }
 
             if (repeatingDays.contains(day) && !routine.isSetOn(day)) {
@@ -118,7 +118,7 @@ public class RoutineService {
             }
 
             if (endDate != null && ((currentDate.isEqual(endDate)) || currentDate.isAfter(endDate))) {
-                removeItemOrder(userDetails, routineId, currentDate);
+                removeItemOrder(routine, day, currentDate);
             }
 
             currentDate = currentDate.plusDays(1);
