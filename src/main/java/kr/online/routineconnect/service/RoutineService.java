@@ -128,4 +128,30 @@ public class RoutineService {
         mapper.updateRoutineFromRequest(routine, request);
     }
 
+    public void updateItemOrder(CustomUserDetails userDetails, LocalDate date, List<ItemUpdate> itemUpdates)
+            throws IllegalArgumentException {
+        var user = userDetails.getUser();
+        DayOfWeek day = date.getDayOfWeek();
+
+        for (ItemUpdate update : itemUpdates) {
+            ItemOrder itemOrder = itemOrderRepository.findById(update.getItemOrderId())
+                    .orElseThrow(() -> new IllegalArgumentException("잘못된 ItemOrder ID 입니다."));
+            validate(itemOrder.userIs(user));
+            Double newPosition = update.getPosition();
+
+            if (itemOrder.getDate().isEqual(date)) {
+                itemOrder.updatePositionTo(newPosition);
+            } else {
+                itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
+                itemOrderRepository.save(ItemOrder.builder()
+                        .user(user)
+                        .item(itemOrder.getItem())
+                        .date(date)
+                        .day(day)
+                        .position(newPosition)
+                        .build());
+            }
+        }
+    }
+
 }
