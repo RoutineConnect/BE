@@ -96,4 +96,9 @@ public class RoutineController {
         List<Float> achievements = routineService.getAchievementsForWeek(user, date);
         return ResponseEntity.ok(achievements);
     }
+
+    @GetMapping("/hour")
+    public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(routineService.getHours(user));
+    }
 }
