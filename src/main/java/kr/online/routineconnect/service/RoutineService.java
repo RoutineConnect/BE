@@ -64,4 +64,28 @@ public class RoutineService {
                 );
     }
 
+    public Routine addRoutine(CustomUserDetails userDetails, RoutineRequest request) {
+        var user = userDetails.getUser();
+        LocalDate currentDate = request.getCreatedDate();
+        LocalDate lastDate = currentDate.plusWeeks(1);
+        Routine routine = routineRepository.save(mapper.requestToRoutine(request, user));
+
+        while (currentDate.isBefore(lastDate)) {
+            DayOfWeek day = currentDate.getDayOfWeek();
+            if (routine.isSetOn(day)) {
+                double position = itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, currentDate);
+                itemOrderRepository.save(ItemOrder.builder()
+                        .user(user)
+                        .item(routine)
+                        .date(currentDate)
+                        .day(day)
+                        .position(position != 0 ? position : 1)
+                        .build());
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return routine;
+    }
+
 }
