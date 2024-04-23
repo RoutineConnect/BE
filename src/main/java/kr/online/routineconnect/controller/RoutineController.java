@@ -108,8 +108,8 @@ public class RoutineController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long routine_id,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            @PathVariable LocalDate date) {
-        routineService.removeItemOrder(user, routine_id, date);
+            @RequestParam LocalDate date) {
+        routineService.endRoutine(user, routine_id, date);
         return ResponseEntity.ok(Response.SUCCESS);
     }
 

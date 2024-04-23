@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import kr.online.routineconnect.domain.Accomplishment;
 import kr.online.routineconnect.domain.CustomUserDetails;
 import kr.online.routineconnect.domain.Hour;
+import kr.online.routineconnect.domain.Item;
 import kr.online.routineconnect.domain.ItemOrder;
 import kr.online.routineconnect.domain.Routine;
 import kr.online.routineconnect.dto.ItemResponse;
@@ -98,7 +99,6 @@ public class RoutineService {
         EnumSet<DayOfWeek> repeatingDays = requestRoutine.getRepeatingDays();
         LocalDate currentDate = request.getCreatedDate();
         LocalDate lastDate = currentDate.plusWeeks(1);
-        LocalDate endDate = request.getEndedDate();
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
@@ -115,10 +115,6 @@ public class RoutineService {
                         .day(day)
                         .position(itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, currentDate))
                         .build());
-            }
-
-            if (endDate != null && ((currentDate.isEqual(endDate)) || currentDate.isAfter(endDate))) {
-                removeItemOrder(routine, day, currentDate);
             }
 
             currentDate = currentDate.plusDays(1);
@@ -180,23 +176,15 @@ public class RoutineService {
                 .collect(Collectors.toSet());
     }
 
-    public void removeItemOrder(CustomUserDetails userDetails, Long routineId, LocalDate date) {
+    public void endRoutine(CustomUserDetails userDetails, Long routineId, LocalDate date) {
         var user = userDetails.getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
 
-        itemOrderRepository.findByItemAndDate(routine, date)
-                .ifPresentOrElse(
-                        // date에 저장돼있다면 제거
-                        itemOrder -> itemOrderRepository.deleteById(itemOrder.getId()),
-                        // 아니라면 itemOrderIgnore에 저장
-                        () -> {
-                            var day = date.getDayOfWeek();
-                            var itemOrder = itemOrderRepository
-                                    .findTopByItemAndDayAndDateLessThanEqualOrderByDateDesc(routine, day, date);
-                            itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
-                        });
+        var day = date.getDayOfWeek();
+        removeItemOrder(routine, day, date);
+        routine.setEndedDate(date);
     }
 
     public void removeRoutine(CustomUserDetails userDetails, Long routineId) {
@@ -206,6 +194,19 @@ public class RoutineService {
         validate(routine.userIs(user));
 
         routineRepository.deleteById(routineId);
+    }
+
+    private void removeItemOrder(Item item, DayOfWeek day, LocalDate date) {
+        itemOrderRepository.findByItemAndDate(item, date)
+                .ifPresentOrElse(
+                        // date에 저장돼있다면 제거
+                        itemOrder -> itemOrderRepository.deleteById(itemOrder.getId()),
+                        // 아니라면 itemOrderIgnore에 저장
+                        () -> {
+                            var itemOrder = itemOrderRepository
+                                    .findTopByItemAndDayAndDateLessThanEqualOrderByDateDesc(item, day, date);
+                            itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
+                        });
     }
 
     private void validate(Boolean condition) {
