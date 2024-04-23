@@ -75,4 +75,15 @@ public class RoutineController {
         routineService.updateRoutine(user, routine_id, request);
         return ResponseEntity.ok(Response.SUCCESS);
     }
+
+    // 아이템 순서 변경
+    @PatchMapping("/page/{date}")
+    public ResponseEntity<Response> updateItemOrder(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @PathVariable LocalDate date,
+            @Valid @RequestBody List<ItemUpdate> itemUpdates) {
+        routineService.updateItemOrder(user, date, itemUpdates);
+        return ResponseEntity.ok(Response.SUCCESS);
+    }
 }
