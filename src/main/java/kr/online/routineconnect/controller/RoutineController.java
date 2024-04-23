@@ -101,4 +101,14 @@ public class RoutineController {
     public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(routineService.getHours(user));
     }
+
+    @PatchMapping("/routine")
+    public ResponseEntity<Response> endRouitne(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long routine_id,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @PathVariable LocalDate date) {
+        routineService.removeItemOrder(user, routine_id, date);
+        return ResponseEntity.ok(Response.SUCCESS);
+    }
 }

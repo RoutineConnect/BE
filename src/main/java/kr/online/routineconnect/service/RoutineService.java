@@ -181,4 +181,28 @@ public class RoutineService {
                 .collect(Collectors.toSet());
     }
 
+    public void removeItemOrder(CustomUserDetails userDetails, Long routineId, LocalDate date) {
+        var user = userDetails.getUser();
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
+        validate(routine.userIs(user));
+
+        itemOrderRepository.findByItemAndDate(routine, date)
+                .ifPresentOrElse(
+                        // date에 저장돼있다면 제거
+                        itemOrder -> itemOrderRepository.deleteById(itemOrder.getId()),
+                        // 아니라면 itemOrderIgnore에 저장
+                        () -> {
+                            var day = date.getDayOfWeek();
+                            var itemOrder = itemOrderRepository
+                                    .findTopByItemAndDayAndDateLessThanEqualOrderByDateDesc(routine, day, date);
+                            itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
+                        });
+    }
+
+    private void validate(Boolean condition) {
+        if (!condition) {
+            throw new IllegalArgumentException("잘못된 값입니다.");
+        }
+    }
 }
