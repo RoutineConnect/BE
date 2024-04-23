@@ -88,4 +88,44 @@ public class RoutineService {
         return routine;
     }
 
+    public void updateRoutine(CustomUserDetails userDetails, Long routineId, RoutineRequest request)
+            throws IllegalArgumentException {
+        var user = userDetails.getUser();
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
+        validate(routine.userIs(user));
+
+        var requestRoutine = mapper.requestToRoutine(request, user);
+        EnumSet<DayOfWeek> repeatingDays = requestRoutine.getRepeatingDays();
+        LocalDate currentDate = request.getCreatedDate();
+        LocalDate lastDate = currentDate.plusWeeks(1);
+        LocalDate endDate = request.getEndedDate();
+
+        while (currentDate.isBefore(lastDate)) {
+            DayOfWeek day = currentDate.getDayOfWeek();
+
+            if (!repeatingDays.contains(day) && routine.isSetOn(day)) {
+                removeItemOrder(routine, day, currentDate);
+            }
+
+            if (repeatingDays.contains(day) && !routine.isSetOn(day)) {
+                itemOrderRepository.save(ItemOrder.builder()
+                        .user(user)
+                        .item(routine)
+                        .date(currentDate)
+                        .day(day)
+                        .position(itemOrderRepository.findMaxPositionByUserAndDayAndDate(user, day, currentDate))
+                        .build());
+            }
+
+            if (endDate != null && ((currentDate.isEqual(endDate)) || currentDate.isAfter(endDate))) {
+                removeItemOrder(routine, day, currentDate);
+            }
+
+            currentDate = currentDate.plusDays(1);
+        }
+
+        mapper.updateRoutineFromRequest(routine, request);
+    }
+
 }

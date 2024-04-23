@@ -65,4 +65,14 @@ public class RoutineController {
         Routine routine = routineService.addRoutine(user, request);
         return ResponseEntity.ok(Response.SUCCESS);
     }
+
+    // 루틴 수정
+    @PutMapping("/routine")
+    public ResponseEntity<Response> updateRoutine(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam Long routine_id,
+            @Valid @RequestBody RoutineRequest request) {
+        routineService.updateRoutine(user, routine_id, request);
+        return ResponseEntity.ok(Response.SUCCESS);
+    }
 }
