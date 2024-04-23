@@ -13,11 +13,9 @@ public class RoutineRequest {
     @NotEmpty
     private String title;
     private String hour;
-    @NotNull
-    private String routineDay;
+    private Byte routineDay;
     @NotNull
     private Boolean shared;
     @NotNull
     private LocalDate createdDate;
-    private LocalDate endedDate;
 }

@@ -25,11 +25,13 @@ public abstract class RoutineMapper {
     @Mapping(target = "repeatingDays", source = "routineRequest.routineDay")
     @Mapping(target = "hour", source = "routineRequest.hour", qualifiedByName = "setHourWith")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "endedDate", ignore = true)
     public abstract Routine requestToRoutine(RoutineRequest routineRequest, @Context User user);
 
     @Mapping(target = "repeatingDays", source = "routineDay")
     @Mapping(target = "hour", expression = "java( setHourWith( routineRequest.getHour(), routine.getUser() ) )")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "endedDate", ignore = true)
     public abstract void updateRoutineFromRequest(@MappingTarget Routine routine, RoutineRequest routineRequest);
 
     @Named("setHourWith")
@@ -45,7 +47,7 @@ public abstract class RoutineMapper {
                 : null;
     }
 
-    protected EnumSet<DayOfWeek> map(String routineDay) {
-        return enumSetToBitmaskConverter.convertToEntityAttribute(Byte.parseByte(routineDay));
+    protected EnumSet<DayOfWeek> map(Byte routineDay) {
+        return enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
     }
 }
