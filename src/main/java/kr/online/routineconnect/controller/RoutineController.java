@@ -56,4 +56,13 @@ public class RoutineController {
         routineService.setAccomplishment(user, item_order_id, accomplishment);
         return ResponseEntity.ok(Response.SUCCESS);
     }
+
+    // 루틴 추가
+    @PostMapping("/routine")
+    public ResponseEntity<Response> addRoutine(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Valid @RequestBody RoutineRequest request) {
+        Routine routine = routineService.addRoutine(user, request);
+        return ResponseEntity.ok(Response.SUCCESS);
+    }
 }
