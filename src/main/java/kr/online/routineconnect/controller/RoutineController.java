@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -109,6 +110,13 @@ public class RoutineController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             @PathVariable LocalDate date) {
         routineService.removeItemOrder(user, routine_id, date);
+        return ResponseEntity.ok(Response.SUCCESS);
+    }
+
+    @DeleteMapping("/routine")
+    public ResponseEntity<Response> removeRoutine(
+            @AuthenticationPrincipal CustomUserDetails user, @PathVariable Long routine_id) {
+        routineService.removeRoutine(user, routine_id);
         return ResponseEntity.ok(Response.SUCCESS);
     }
 }

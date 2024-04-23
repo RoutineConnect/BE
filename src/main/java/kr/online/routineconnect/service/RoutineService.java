@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import kr.online.routineconnect.domain.Accomplishment;
 import kr.online.routineconnect.domain.CustomUserDetails;
 import kr.online.routineconnect.domain.Hour;
-import kr.online.routineconnect.domain.Item;
 import kr.online.routineconnect.domain.ItemOrder;
 import kr.online.routineconnect.domain.Routine;
 import kr.online.routineconnect.dto.ItemResponse;
@@ -198,6 +197,15 @@ public class RoutineService {
                                     .findTopByItemAndDayAndDateLessThanEqualOrderByDateDesc(routine, day, date);
                             itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
                         });
+    }
+
+    public void removeRoutine(CustomUserDetails userDetails, Long routineId) {
+        var user = userDetails.getUser();
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
+        validate(routine.userIs(user));
+
+        routineRepository.deleteById(routineId);
     }
 
     private void validate(Boolean condition) {
