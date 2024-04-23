@@ -86,4 +86,14 @@ public class RoutineController {
         routineService.updateItemOrder(user, date, itemUpdates);
         return ResponseEntity.ok(Response.SUCCESS);
     }
+
+    // 일자 별 달성도 표시 조회
+    @GetMapping("/achievement/{date}")
+    public ResponseEntity<List<Float>> getAchievementsForWeek(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @PathVariable LocalDate date) {
+        List<Float> achievements = routineService.getAchievementsForWeek(user, date);
+        return ResponseEntity.ok(achievements);
+    }
 }

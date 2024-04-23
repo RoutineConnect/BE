@@ -154,4 +154,22 @@ public class RoutineService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<Float> getAchievementsForWeek(CustomUserDetails userDetails, LocalDate date) {
+        var user = userDetails.getUser();
+        LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = startDate.plusWeeks(1);
+        List<Float> achievements = new ArrayList<>();
+
+        while (startDate.isBefore(endDate)) {
+            var totalItemOrders = itemOrderRepository.countByUserAndDate(user, date);
+            var accomplishments = accomplishmentRepository.countByUserAndDate(user, endDate);
+
+            achievements.add(totalItemOrders != 0 ? accomplishments / totalItemOrders : 0f);
+            startDate = startDate.plusDays(1);
+        }
+
+        return achievements;
+    }
+
 }
