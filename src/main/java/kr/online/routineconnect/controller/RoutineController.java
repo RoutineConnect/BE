@@ -119,4 +119,9 @@ public class RoutineController {
         routineService.removeRoutine(user, routine_id);
         return ResponseEntity.ok(Response.SUCCESS);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Response> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(Response.FAIL.setMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }
