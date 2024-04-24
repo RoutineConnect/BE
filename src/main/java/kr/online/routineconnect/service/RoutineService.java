@@ -25,6 +25,8 @@ import kr.online.routineconnect.repository.ItemOrderIgnoreRepository;
 import kr.online.routineconnect.repository.ItemOrderRepository;
 import kr.online.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,16 +40,18 @@ public class RoutineService {
     private final HourRepository hourRepository;
     private final ItemOrderIgnoreRepository itemOrderIgnoreRepository;
     private final AccomplishmentRepository accomplishmentRepository;
+    private final UserDetailsService userDetailsService;
     private final RoutineMapper mapper;
 
     @Transactional(readOnly = true)
-    public List<ItemResponse> findItemsByUserOnDate(CustomUserDetails userDetails, LocalDate date) {
-        return itemOrderRepository.findItemsByUserAndDate(userDetails.getUser(), date);
+    public List<ItemResponse> findItemsByUserOnDate(UserDetails userDetails, LocalDate date) {
+        var user = (CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername());
+        return itemOrderRepository.findItemsByUserAndDate(user.getUser(), date);
     }
 
-    public void setAccomplishment(CustomUserDetails userDetails, Long itemOrderId, Boolean accomplishment)
+    public void setAccomplishment(UserDetails userDetails, Long itemOrderId, Boolean accomplishment)
             throws IllegalArgumentException {
-        var user = userDetails.getUser();
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         ItemOrder itemOrder = itemOrderRepository.findById(itemOrderId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 ItemOrder ID 입니다."));
         validate(user.equals(itemOrder.getUser()));
@@ -64,8 +68,8 @@ public class RoutineService {
                 );
     }
 
-    public Routine addRoutine(CustomUserDetails userDetails, RoutineRequest request) {
-        var user = userDetails.getUser();
+    public Routine addRoutine(UserDetails userDetails, RoutineRequest request) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         LocalDate currentDate = request.getCreatedDate();
         LocalDate lastDate = currentDate.plusWeeks(1);
         Routine routine = routineRepository.save(mapper.requestToRoutine(request, user));
@@ -88,9 +92,9 @@ public class RoutineService {
         return routine;
     }
 
-    public void updateRoutine(CustomUserDetails userDetails, Long routineId, RoutineRequest request)
+    public void updateRoutine(UserDetails userDetails, Long routineId, RoutineRequest request)
             throws IllegalArgumentException {
-        var user = userDetails.getUser();
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
@@ -123,9 +127,9 @@ public class RoutineService {
         mapper.updateRoutineFromRequest(routine, request);
     }
 
-    public void updateItemOrder(CustomUserDetails userDetails, LocalDate date, List<ItemUpdate> itemUpdates)
+    public void updateItemOrder(UserDetails userDetails, LocalDate date, List<ItemUpdate> itemUpdates)
             throws IllegalArgumentException {
-        var user = userDetails.getUser();
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         DayOfWeek day = date.getDayOfWeek();
 
         for (ItemUpdate update : itemUpdates) {
@@ -150,8 +154,8 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public List<Float> getAchievementsForWeek(CustomUserDetails userDetails, LocalDate date) {
-        var user = userDetails.getUser();
+    public List<Float> getAchievementsForWeek(UserDetails userDetails, LocalDate date) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endDate = startDate.plusWeeks(1);
         List<Float> achievements = new ArrayList<>();
@@ -168,16 +172,17 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public Set<String> getHours(CustomUserDetails userDetails) {
+    public Set<String> getHours(UserDetails userDetails) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Set<Hour> hours = hourRepository.findByUserIsNull();
-        hours.addAll(userDetails.getUser().getHours());
+        hours.addAll(user.getHours());
         return hours.stream().map(Hour::getHour)
                 .limit(Hour.MAX_HOURS)
                 .collect(Collectors.toSet());
     }
 
-    public void endRoutine(CustomUserDetails userDetails, Long routineId, LocalDate date) {
-        var user = userDetails.getUser();
+    public void endRoutine(UserDetails userDetails, Long routineId, LocalDate date) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
@@ -187,8 +192,8 @@ public class RoutineService {
         routine.setEndedDate(date);
     }
 
-    public void removeRoutine(CustomUserDetails userDetails, Long routineId) {
-        var user = userDetails.getUser();
+    public void removeRoutine(UserDetails userDetails, Long routineId) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
