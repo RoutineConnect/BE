@@ -9,16 +9,18 @@ import kr.online.routineconnect.domain.User;
 import kr.online.routineconnect.dto.RoutineRequest;
 import kr.online.routineconnect.repository.HourRepository;
 import org.mapstruct.Context;
-import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring")
 public abstract class RoutineMapper {
 
+    @Autowired
     protected EnumSetToBitmaskConverter enumSetToBitmaskConverter;
+    @Autowired
     protected HourRepository hourRepository;
 
     @Mapping(target = "user", expression = "java( user )")
@@ -36,7 +38,7 @@ public abstract class RoutineMapper {
 
     @Named("setHourWith")
     protected Hour setHourWith(String hour, @Context User user) {
-        return hour != null ?
+        return hour != null && hour.isEmpty() ?
                 hourRepository.findByHourAndUser(hour, user)
                         .orElseGet(() -> hourRepository.save(
                                 Hour.builder()
