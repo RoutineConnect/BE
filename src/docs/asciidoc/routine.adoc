@@ -1,0 +1,197 @@
+== 메인페이지조회(Main Page Check)
+
+메인페이지 조회는 사용자의 주요 정보를 확인하는 기능입니다.
+
+=== 메인페이지조회
+
+사용자의 메인페이지 정보를 조회합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/메인페이지조회/curl-request.adoc[]
+include::{snippets}/메인페이지조회/http-request.adoc[]
+include::{snippets}/메인페이지조회/httpie-request.adoc[]
+include::{snippets}/메인페이지조회/path-parameters.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/메인페이지조회/http-response.adoc[]
+include::{snippets}/메인페이지조회/response-body.adoc[]
+include::{snippets}/메인페이지조회/response-fields.adoc[]
+
+== 달성도조회(Progress Check)
+
+달성도 조회는 사용자의 목표 달성 상태를 확인하는 기능입니다.
+
+=== 달성도조회
+
+사용자의 달성도를 조회합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/달성도조회/curl-request.adoc[]
+include::{snippets}/달성도조회/http-request.adoc[]
+include::{snippets}/달성도조회/httpie-request.adoc[]
+include::{snippets}/달성도조회/path-parameters.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/달성도조회/http-response.adoc[]
+include::{snippets}/달성도조회/response-body.adoc[]
+include::{snippets}/달성도조회/response-fields.adoc[]
+
+== 달성도 설정
+
+루틴의 달성도를 설정합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/달성도설정/curl-request.adoc[]
+include::{snippets}/달성도설정/http-request.adoc[]
+include::{snippets}/달성도설정/httpie-request.adoc[]
+include::{snippets}/달성도설정/query-parameters.adoc[]
+include::{snippets}/달성도설정/request-body.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/달성도설정/http-response.adoc[]
+include::{snippets}/달성도설정/response-body.adoc[]
+include::{snippets}/달성도설정/response-fields.adoc[]
+
+== 루틴추가(Add Routine)
+
+루틴 추가는 사용자의 새로운 루틴을 등록하는 기능입니다.
+
+=== 루틴추가
+
+새로운 루틴을 등록합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/루틴추가/curl-request.adoc[]
+include::{snippets}/루틴추가/http-request.adoc[]
+include::{snippets}/루틴추가/httpie-request.adoc[]
+include::{snippets}/루틴추가/request-body.adoc[]
+include::{snippets}/루틴추가/request-fields.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/루틴추가/http-response.adoc[]
+include::{snippets}/루틴추가/response-body.adoc[]
+
+== 루틴수정(Routine Modification)
+
+루틴 수정은 사용자의 루틴을 변경하는 기능입니다.
+
+=== 루틴수정
+
+사용자의 루틴을 수정합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/루틴수정/curl-request.adoc[]
+include::{snippets}/루틴수정/http-request.adoc[]
+include::{snippets}/루틴수정/httpie-request.adoc[]
+include::{snippets}/루틴수정/query-parameters.adoc[]
+include::{snippets}/루틴수정/request-body.adoc[]
+include::{snippets}/루틴수정/request-fields.adoc[]
+
+[discrete]
+==== 루틴수정성공
+
+include::{snippets}/루틴수정/http-response.adoc[]
+include::{snippets}/루틴수정/response-body.adoc[]
+
+== 아이템순서변경(Item Order Change)
+
+아이템 순서 변경은 사용자의 아이템 순서를 변경하는 기능입니다.
+
+=== 아이템순서변경
+
+사용자의 아이템 순서를 변경합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/아이템순서변경/curl-request.adoc[]
+include::{snippets}/아이템순서변경/http-request.adoc[]
+include::{snippets}/아이템순서변경/httpie-request.adoc[]
+include::{snippets}/아이템순서변경/path-parameters.adoc[]
+include::{snippets}/아이템순서변경/request-body.adoc[]
+include::{snippets}/아이템순서변경/request-fields.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/아이템순서변경/http-response.adoc[]
+include::{snippets}/아이템순서변경/response-body.adoc[]
+
+== 유저시간목록조회(User Time List Check)
+
+유저시간목록조회는 사용자의 시간 목록을 조회하는 기능입니다.
+
+=== 유저시간목록조회
+
+사용자의 시간 목록을 조회합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/유저시간목록조회/curl-request.adoc[]
+include::{snippets}/유저시간목록조회/http-request.adoc[]
+include::{snippets}/유저시간목록조회/httpie-request.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/유저시간목록조회/http-response.adoc[]
+include::{snippets}/유저시간목록조회/response-body.adoc[]
+include::{snippets}/유저시간목록조회/response-fields.adoc[]
+
+== 루틴 종료
+
+이전의 루틴 기록을 남기고 루틴을 종료합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/루틴종료/curl-request.adoc[]
+include::{snippets}/루틴종료/http-request.adoc[]
+include::{snippets}/루틴종료/httpie-request.adoc[]
+include::{snippets}/루틴종료/query-parameters.adoc[]
+include::{snippets}/루틴종료/path-parameters.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/루틴종료/http-response.adoc[]
+include::{snippets}/루틴종료/response-body.adoc[]
+include::{snippets}/루틴종료/response-fields.adoc[]
+
+== 루틴 삭제
+
+등록한 루틴을 삭제합니다.
+
+[discrete]
+==== 요청
+
+include::{snippets}/루틴삭제/curl-request.adoc[]
+include::{snippets}/루틴삭제/http-request.adoc[]
+include::{snippets}/루틴삭제/httpie-request.adoc[]
+include::{snippets}/루틴삭제/path-parameters.adoc[]
+
+[discrete]
+==== 응답
+
+include::{snippets}/루틴삭제/http-response.adoc[]
+include::{snippets}/루틴삭제/response-body.adoc[]
+include::{snippets}/루틴삭제/response-fields.adoc[]
