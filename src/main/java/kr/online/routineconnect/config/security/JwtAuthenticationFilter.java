@@ -36,6 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("exception", Error.BAD_TOKEN);
         }
 
-        doFilter(request, response, filterChain);
+        filterChain.doFilter(request, response);
     }
 }
