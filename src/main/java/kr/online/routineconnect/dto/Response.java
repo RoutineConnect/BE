@@ -1,6 +1,8 @@
 package kr.online.routineconnect.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +17,7 @@ public enum Response {
 
     private final boolean isSuccess;
 
+    @JsonInclude(Include.NON_NULL)
     @Getter
     private String message;
 
