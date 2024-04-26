@@ -84,4 +84,5 @@ v2024.03.12, 2024-03-12
 
 == API
 
+include::src/docs/asciidoc/routine.adoc[]
 include::src/docs/asciidoc/sign.adoc[]

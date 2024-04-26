@@ -1,11 +1,10 @@
 package kr.online.routineconnect.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import kr.online.routineconnect.domain.CustomUserDetails;
-import kr.online.routineconnect.domain.Hour;
 import kr.online.routineconnect.domain.Routine;
 import kr.online.routineconnect.dto.ItemResponse;
 import kr.online.routineconnect.dto.ItemUpdate;
@@ -17,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -41,7 +41,7 @@ public class RoutineController {
     // 메인페이지 (개인 루틴) 조회
     @GetMapping("/page/{date}")
     public ResponseEntity<List<ItemResponse>> getMemberItemsOnDate(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             @PathVariable LocalDate date) {
         List<ItemResponse> items = routineService.findItemsByUserOnDate(user, date);
@@ -51,17 +51,17 @@ public class RoutineController {
     // 달성도 설정
     @PatchMapping("/page")
     public ResponseEntity<Response> setAccomplishment(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @RequestParam Long item_order_id,
-            @RequestParam Boolean accomplishment) {
-        routineService.setAccomplishment(user, item_order_id, accomplishment);
+            @RequestBody JsonNode accomplishment) {
+        routineService.setAccomplishment(user, item_order_id, accomplishment.asBoolean());
         return ResponseEntity.ok(Response.SUCCESS);
     }
 
     // 루틴 추가
     @PostMapping("/routine")
     public ResponseEntity<Response> addRoutine(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @Valid @RequestBody RoutineRequest request) {
         Routine routine = routineService.addRoutine(user, request);
         return ResponseEntity.ok(Response.SUCCESS);
@@ -70,7 +70,7 @@ public class RoutineController {
     // 루틴 수정
     @PutMapping("/routine")
     public ResponseEntity<Response> updateRoutine(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @RequestParam Long routine_id,
             @Valid @RequestBody RoutineRequest request) {
         routineService.updateRoutine(user, routine_id, request);
@@ -80,7 +80,7 @@ public class RoutineController {
     // 아이템 순서 변경
     @PatchMapping("/page/{date}")
     public ResponseEntity<Response> updateItemOrder(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             @PathVariable LocalDate date,
             @Valid @RequestBody List<ItemUpdate> itemUpdates) {
@@ -91,7 +91,7 @@ public class RoutineController {
     // 일자 별 달성도 표시 조회
     @GetMapping("/achievement/{date}")
     public ResponseEntity<List<Float>> getAchievementsForWeek(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             @PathVariable LocalDate date) {
         List<Float> achievements = routineService.getAchievementsForWeek(user, date);
@@ -99,23 +99,23 @@ public class RoutineController {
     }
 
     @GetMapping("/hour")
-    public ResponseEntity<Set<Hour>> getUserHours(@AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<Set<String>> getUserHours(@AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(routineService.getHours(user));
     }
 
-    @PatchMapping("/routine")
+    @PatchMapping("/routine/{routine_id}")
     public ResponseEntity<Response> endRouitne(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal UserDetails user,
             @PathVariable Long routine_id,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            @PathVariable LocalDate date) {
-        routineService.removeItemOrder(user, routine_id, date);
+            @RequestParam LocalDate date) {
+        routineService.endRoutine(user, routine_id, date);
         return ResponseEntity.ok(Response.SUCCESS);
     }
 
-    @DeleteMapping("/routine")
+    @DeleteMapping("/routine/{routine_id}")
     public ResponseEntity<Response> removeRoutine(
-            @AuthenticationPrincipal CustomUserDetails user, @PathVariable Long routine_id) {
+            @AuthenticationPrincipal UserDetails user, @PathVariable Long routine_id) {
         routineService.removeRoutine(user, routine_id);
         return ResponseEntity.ok(Response.SUCCESS);
     }

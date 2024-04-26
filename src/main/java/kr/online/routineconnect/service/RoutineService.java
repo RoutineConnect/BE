@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import kr.online.routineconnect.domain.Accomplishment;
 import kr.online.routineconnect.domain.CustomUserDetails;
 import kr.online.routineconnect.domain.Hour;
+import kr.online.routineconnect.domain.Item;
 import kr.online.routineconnect.domain.ItemOrder;
 import kr.online.routineconnect.domain.Routine;
 import kr.online.routineconnect.dto.ItemResponse;
@@ -24,6 +25,8 @@ import kr.online.routineconnect.repository.ItemOrderIgnoreRepository;
 import kr.online.routineconnect.repository.ItemOrderRepository;
 import kr.online.routineconnect.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,16 +40,18 @@ public class RoutineService {
     private final HourRepository hourRepository;
     private final ItemOrderIgnoreRepository itemOrderIgnoreRepository;
     private final AccomplishmentRepository accomplishmentRepository;
+    private final UserDetailsService userDetailsService;
     private final RoutineMapper mapper;
 
     @Transactional(readOnly = true)
-    public List<ItemResponse> findItemsByUserOnDate(CustomUserDetails userDetails, LocalDate date) {
-        return itemOrderRepository.findItemsByUserAndDate(userDetails.getUser(), date);
+    public List<ItemResponse> findItemsByUserOnDate(UserDetails userDetails, LocalDate date) {
+        var user = (CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername());
+        return itemOrderRepository.findItemsByUserAndDate(user.getUser(), date);
     }
 
-    public void setAccomplishment(CustomUserDetails userDetails, Long itemOrderId, Boolean accomplishment)
+    public void setAccomplishment(UserDetails userDetails, Long itemOrderId, Boolean accomplishment)
             throws IllegalArgumentException {
-        var user = userDetails.getUser();
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         ItemOrder itemOrder = itemOrderRepository.findById(itemOrderId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 ItemOrder ID 입니다."));
         validate(user.equals(itemOrder.getUser()));
@@ -63,8 +68,8 @@ public class RoutineService {
                 );
     }
 
-    public Routine addRoutine(CustomUserDetails userDetails, RoutineRequest request) {
-        var user = userDetails.getUser();
+    public Routine addRoutine(UserDetails userDetails, RoutineRequest request) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         LocalDate currentDate = request.getCreatedDate();
         LocalDate lastDate = currentDate.plusWeeks(1);
         Routine routine = routineRepository.save(mapper.requestToRoutine(request, user));
@@ -87,9 +92,9 @@ public class RoutineService {
         return routine;
     }
 
-    public void updateRoutine(CustomUserDetails userDetails, Long routineId, RoutineRequest request)
+    public void updateRoutine(UserDetails userDetails, Long routineId, RoutineRequest request)
             throws IllegalArgumentException {
-        var user = userDetails.getUser();
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
@@ -98,13 +103,12 @@ public class RoutineService {
         EnumSet<DayOfWeek> repeatingDays = requestRoutine.getRepeatingDays();
         LocalDate currentDate = request.getCreatedDate();
         LocalDate lastDate = currentDate.plusWeeks(1);
-        LocalDate endDate = request.getEndedDate();
 
         while (currentDate.isBefore(lastDate)) {
             DayOfWeek day = currentDate.getDayOfWeek();
 
             if (!repeatingDays.contains(day) && routine.isSetOn(day)) {
-                removeItemOrder(userDetails, routineId, currentDate);
+                removeItemOrder(routine, day, currentDate);
             }
 
             if (repeatingDays.contains(day) && !routine.isSetOn(day)) {
@@ -117,19 +121,15 @@ public class RoutineService {
                         .build());
             }
 
-            if (endDate != null && ((currentDate.isEqual(endDate)) || currentDate.isAfter(endDate))) {
-                removeItemOrder(userDetails, routineId, currentDate);
-            }
-
             currentDate = currentDate.plusDays(1);
         }
 
         mapper.updateRoutineFromRequest(routine, request);
     }
 
-    public void updateItemOrder(CustomUserDetails userDetails, LocalDate date, List<ItemUpdate> itemUpdates)
+    public void updateItemOrder(UserDetails userDetails, LocalDate date, List<ItemUpdate> itemUpdates)
             throws IllegalArgumentException {
-        var user = userDetails.getUser();
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         DayOfWeek day = date.getDayOfWeek();
 
         for (ItemUpdate update : itemUpdates) {
@@ -154,8 +154,8 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public List<Float> getAchievementsForWeek(CustomUserDetails userDetails, LocalDate date) {
-        var user = userDetails.getUser();
+    public List<Float> getAchievementsForWeek(UserDetails userDetails, LocalDate date) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endDate = startDate.plusWeeks(1);
         List<Float> achievements = new ArrayList<>();
@@ -172,40 +172,46 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public Set<Hour> getHours(CustomUserDetails userDetails) {
+    public Set<String> getHours(UserDetails userDetails) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Set<Hour> hours = hourRepository.findByUserIsNull();
-        hours.addAll(userDetails.getUser().getHours());
-        return hours.stream()
+        hours.addAll(user.getHours());
+        return hours.stream().map(Hour::getHour)
                 .limit(Hour.MAX_HOURS)
                 .collect(Collectors.toSet());
     }
 
-    public void removeItemOrder(CustomUserDetails userDetails, Long routineId, LocalDate date) {
-        var user = userDetails.getUser();
+    public void endRoutine(UserDetails userDetails, Long routineId, LocalDate date) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
 
-        itemOrderRepository.findByItemAndDate(routine, date)
-                .ifPresentOrElse(
-                        // date에 저장돼있다면 제거
-                        itemOrder -> itemOrderRepository.deleteById(itemOrder.getId()),
-                        // 아니라면 itemOrderIgnore에 저장
-                        () -> {
-                            var day = date.getDayOfWeek();
-                            var itemOrder = itemOrderRepository
-                                    .findTopByItemAndDayAndDateLessThanEqualOrderByDateDesc(routine, day, date);
-                            itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
-                        });
+        var day = date.getDayOfWeek();
+        removeItemOrder(routine, day, date);
+        routine.setEndedDate(date);
     }
 
-    public void removeRoutine(CustomUserDetails userDetails, Long routineId) {
-        var user = userDetails.getUser();
+    public void removeRoutine(UserDetails userDetails, Long routineId) {
+        var user = ((CustomUserDetails) userDetailsService.loadUserByUsername(userDetails.getUsername())).getUser();
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 Routine ID 입니다."));
         validate(routine.userIs(user));
 
         routineRepository.deleteById(routineId);
+    }
+
+    private void removeItemOrder(Item item, DayOfWeek day, LocalDate date) {
+        itemOrderRepository.findByItemAndDate(item, date)
+                .ifPresentOrElse(
+                        // date에 저장돼있다면 제거
+                        itemOrder -> itemOrderRepository.deleteById(itemOrder.getId()),
+                        // 아니라면 itemOrderIgnore에 저장
+                        () -> {
+                            var itemOrder = itemOrderRepository
+                                    .findTopByItemAndDayAndDateLessThanEqualOrderByDateDesc(item, day, date);
+                            itemOrderIgnoreRepository.save(ItemOrderMapper.INSTANCE.toIgnore(itemOrder));
+                        });
     }
 
     private void validate(Boolean condition) {

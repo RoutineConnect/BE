@@ -9,32 +9,36 @@ import kr.online.routineconnect.domain.User;
 import kr.online.routineconnect.dto.RoutineRequest;
 import kr.online.routineconnect.repository.HourRepository;
 import org.mapstruct.Context;
-import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring")
 public abstract class RoutineMapper {
 
+    @Autowired
     protected EnumSetToBitmaskConverter enumSetToBitmaskConverter;
+    @Autowired
     protected HourRepository hourRepository;
 
     @Mapping(target = "user", expression = "java( user )")
     @Mapping(target = "repeatingDays", source = "routineRequest.routineDay")
     @Mapping(target = "hour", source = "routineRequest.hour", qualifiedByName = "setHourWith")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "endedDate", ignore = true)
     public abstract Routine requestToRoutine(RoutineRequest routineRequest, @Context User user);
 
     @Mapping(target = "repeatingDays", source = "routineDay")
     @Mapping(target = "hour", expression = "java( setHourWith( routineRequest.getHour(), routine.getUser() ) )")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "endedDate", ignore = true)
     public abstract void updateRoutineFromRequest(@MappingTarget Routine routine, RoutineRequest routineRequest);
 
     @Named("setHourWith")
     protected Hour setHourWith(String hour, @Context User user) {
-        return hour != null ?
+        return hour != null && hour.isEmpty() ?
                 hourRepository.findByHourAndUser(hour, user)
                         .orElseGet(() -> hourRepository.save(
                                 Hour.builder()
@@ -45,7 +49,7 @@ public abstract class RoutineMapper {
                 : null;
     }
 
-    protected EnumSet<DayOfWeek> map(String routineDay) {
-        return enumSetToBitmaskConverter.convertToEntityAttribute(Byte.parseByte(routineDay));
+    protected EnumSet<DayOfWeek> map(Byte routineDay) {
+        return enumSetToBitmaskConverter.convertToEntityAttribute(routineDay);
     }
 }
