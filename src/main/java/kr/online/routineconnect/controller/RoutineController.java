@@ -53,8 +53,8 @@ public class RoutineController {
     public ResponseEntity<Response> setAccomplishment(
             @AuthenticationPrincipal UserDetails user,
             @RequestParam Long item_order_id,
-            @RequestParam Boolean accomplishment) {
-        routineService.setAccomplishment(user, item_order_id, accomplishment);
+            @RequestBody JsonNode accomplishment) {
+        routineService.setAccomplishment(user, item_order_id, accomplishment.asBoolean());
         return ResponseEntity.ok(Response.SUCCESS);
     }
 
