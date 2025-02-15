@@ -45,22 +45,58 @@ jobs:
           cp scripts/* temp/scripts
           tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
 
-      - name: Configure AWS credentials
-        if: github.event_name == 'push'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws-region: ${{vars.AWS_REGION}}
+      - name: Install OCI CLI
+        run: |
+          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | bash -s -- --accept-all-defaults
+          echo "export PATH=\$PATH:/home/runner/bin" >> ~/.bashrc
+          source ~/.bashrc
 
-      - name: Upload to S3
-        if: github.event_name == 'push'
-        run: aws s3 cp --region ${{vars.AWS_REGION}} ./${{env.APPLICATION_NAME}}.tar.gz s3://${{vars.S3_BUCKET_NAME}}/deploy/
+      - name: Configure OCI CLI
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_CONFIG }}" > ~/.oci/config
+          chmod 600 ~/.oci/config
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_key.pem
+          chmod 600 ~/.oci/oci_key.pem
 
-      - name: Deploy with AWS CodeDeploy
-        if: github.event_name == 'push'
-        run: aws deploy create-deployment
-          --application-name ${{env.APPLICATION_NAME}}
-          --deployment-config-name CodeDeployDefault.OneAtATime
-          --deployment-group-name ${{env.APPLICATION_NAME}}-group
-          --s3-location bucket=${{vars.S3_BUCKET_NAME}},bundleType=tgz,key=deploy/${{env.APPLICATION_NAME}}.tar.gz
+      - name: Upload Artifact to OCI Object Storage
+        run: |
+          oci os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
+                            --namespace ${{ vars.OCI_NAMESPACE }} \
+                            --file ${{ env.APPLICATION_NAME }}.tar.gz \
+                            --name deploy/${{ env.APPLICATION_NAME }}.tar.gz
+
+      - name: Deploy to OCI Compute Instance via SSH
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
+            cd /home/opc/routine-connect
+            # OCI Object Storage에서 artifact 다운로드
+            oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
+                              --namespace ${{ vars.OCI_NAMESPACE }} \
+                              --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
+                              --file ${env.APPLICATION_NAME}.tar.gz
+            tar xvfz ${env.APPLICATION_NAME}.tar.gz
+            bash stop-server.sh
+            bash start-server.sh
+          EOF
+
+
+#      - name: Configure AWS credentials
+#        if: github.event_name == 'push'
+#        uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+#          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+#          aws-region: ${{vars.AWS_REGION}}
+#
+#      - name: Upload to S3
+#        if: github.event_name == 'push'
+#        run: aws s3 cp --region ${{vars.AWS_REGION}} ./${{env.APPLICATION_NAME}}.tar.gz s3://${{vars.S3_BUCKET_NAME}}/deploy/
+#
+#      - name: Deploy with AWS CodeDeploy
+#        if: github.event_name == 'push'
+#        run: aws deploy create-deployment
+#          --application-name ${{env.APPLICATION_NAME}}
+#          --deployment-config-name CodeDeployDefault.OneAtATime
+#          --deployment-group-name ${{env.APPLICATION_NAME}}-group
+#          --s3-location bucket=${{vars.S3_BUCKET_NAME}},bundleType=tgz,key=deploy/${{env.APPLICATION_NAME}}.tar.gz
