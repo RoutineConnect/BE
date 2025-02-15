@@ -1,9 +1,9 @@
 server:
   port: ${SERVER_PORT}
-  ssl:
-    key-store-type: PKCS12
-    key-store: classpath:keystore.p12
-    key-store-password: ${SERVER_SSL_KEYSTOREPASSWORD}
+#  ssl:
+#    key-store-type: PKCS12
+#    key-store: classpath:keystore.p12
+#    key-store-password: ${SERVER_SSL_KEYSTOREPASSWORD}
 
 spring:
   datasource:
