@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [ main, dev ]
   pull_request:
-    branches: [main, dev]
+    branches: [ main, dev ]
   workflow_dispatch:
 
 jobs:
@@ -55,6 +55,7 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         with:
           command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --namespace ${{ vars.OCI_NAMESPACE }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz"
+          silent: false
 
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
