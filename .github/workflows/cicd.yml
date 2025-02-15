@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APPLICATION_NAME: routine-connect
+      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
 
     steps:
       - name: Checkout repository
@@ -20,8 +25,8 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -45,32 +50,18 @@ jobs:
           cp scripts/* temp/scripts
           tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
 
-      - name: Install OCI CLI
-        run: |
-          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | bash -s -- --accept-all-defaults
-          echo "export PATH=\$PATH:/home/runner/bin" >> ~/.bashrc
-          source ~/.bashrc
-
-      - name: Configure OCI CLI
-        run: |
-          mkdir -p ~/.oci
-          echo "${{ secrets.OCI_CONFIG }}" > ~/.oci/config
-          chmod 600 ~/.oci/config
-          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_key.pem
-          chmod 600 ~/.oci/oci_key.pem
-
       - name: Upload Artifact to OCI Object Storage
-        run: |
-          oci os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
-                            --namespace ${{ vars.OCI_NAMESPACE }} \
-                            --file ${{ env.APPLICATION_NAME }}.tar.gz \
-                            --name deploy/${{ env.APPLICATION_NAME }}.tar.gz
+        if: github.event_name == 'push'
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        with:
+          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --namespace ${{ vars.OCI_NAMESPACE }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz"
 
       - name: Deploy to OCI Compute Instance via SSH
+        if: github.event_name == 'push'
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
+            export PATH=$HOME/bin:$PATH
             cd /home/opc/routine-connect
-            # OCI Object Storage에서 artifact 다운로드
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
                               --namespace ${{ vars.OCI_NAMESPACE }} \
                               --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
@@ -79,24 +70,3 @@ jobs:
             bash stop-server.sh
             bash start-server.sh
           EOF
-
-
-#      - name: Configure AWS credentials
-#        if: github.event_name == 'push'
-#        uses: aws-actions/configure-aws-credentials@v4
-#        with:
-#          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
-#          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-#          aws-region: ${{vars.AWS_REGION}}
-#
-#      - name: Upload to S3
-#        if: github.event_name == 'push'
-#        run: aws s3 cp --region ${{vars.AWS_REGION}} ./${{env.APPLICATION_NAME}}.tar.gz s3://${{vars.S3_BUCKET_NAME}}/deploy/
-#
-#      - name: Deploy with AWS CodeDeploy
-#        if: github.event_name == 'push'
-#        run: aws deploy create-deployment
-#          --application-name ${{env.APPLICATION_NAME}}
-#          --deployment-config-name CodeDeployDefault.OneAtATime
-#          --deployment-group-name ${{env.APPLICATION_NAME}}-group
-#          --s3-location bucket=${{vars.S3_BUCKET_NAME}},bundleType=tgz,key=deploy/${{env.APPLICATION_NAME}}.tar.gz
