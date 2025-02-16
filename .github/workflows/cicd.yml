@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -60,7 +60,7 @@ jobs:
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
+          ssh -i ${{ secrets.OCI_INSTANCE_PRIVATE_KEY }} -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
             export PATH=$HOME/bin:$PATH
             cd /home/opc/routine-connect
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
