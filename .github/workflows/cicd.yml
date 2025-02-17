@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
+          head -n 5 private_key.pem
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -54,14 +55,12 @@ jobs:
           mkdir temp/scripts
           cp scripts/* temp/scripts
           tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
-          ls -al
 
       - name: Upload Artifact to OCI Object Storage
         if: github.event_name == 'push'
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         with:
-          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --debug"
-          silent: false
+          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz"
 
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
