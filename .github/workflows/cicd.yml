@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [ main, dev ]
   pull_request:
-    branches: [main, dev]
+    branches: [ main, dev ]
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -60,11 +65,10 @@ jobs:
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
         run: |
-          ssh -i ${{ secrets.OCI_INSTANCE_PRIVATE_KEY }} -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
             export PATH=$HOME/bin:$PATH
-            cd /home/opc/routine-connect
+            cd /home/ubuntu/routine-connect
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
-                              --namespace ${{ vars.OCI_NAMESPACE }} \
                               --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
                               --file ${env.APPLICATION_NAME}.tar.gz
             tar xvfz ${env.APPLICATION_NAME}.tar.gz
