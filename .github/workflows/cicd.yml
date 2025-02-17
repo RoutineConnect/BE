@@ -24,9 +24,8 @@ jobs:
 
       - name: Setup SSH Key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/private_key.pem
           chmod 600 private_key.pem
-          head -n 5 private_key.pem
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -65,7 +64,7 @@ jobs:
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
+          ssh -i ~/private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
             export PATH=$HOME/bin:$PATH
             cd /home/ubuntu/routine-connect
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
