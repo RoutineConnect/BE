@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -31,8 +31,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
-              export PATH=$HOME/bin:$PATH
+            export PATH=$HOME/bin:$PATH
               cd /home/ubuntu/routine-connect
               oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
                                 --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
