@@ -23,12 +23,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup SSH Key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          printf '%b' "$SSH_PRIVATE_KEY" > private_key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > private_key.pem
           chmod 600 private_key.pem
-          ssh-keygen -l -f private_key.pem
 
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
