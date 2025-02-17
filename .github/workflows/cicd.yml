@@ -19,6 +19,14 @@ jobs:
       OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        run: |
+          printf '%b' "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
       - name: Deploy to OCI Compute Instance via SSH
         if: github.event_name == 'push'
         run: |
@@ -32,14 +40,6 @@ jobs:
             bash stop-server.sh
             bash start-server.sh
           EOF
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup SSH Key
-        run: |
-          printf '%b' "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
 
       - name: Setup Java
         uses: actions/setup-java@v4
