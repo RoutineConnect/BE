@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -54,6 +54,13 @@ jobs:
           mkdir temp/scripts
           cp scripts/* temp/scripts
           tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
+
+      - name: Delete Application Archive in OCI Object Storage
+        if: github.event_name == 'push'
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        with:
+          command: "os object delete --bucket-name ${{ vars.OCI_BUCKET_NAME }} --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --debug"
+          silent: false
 
       - name: Upload Artifact to OCI Object Storage
         if: github.event_name == 'push'
