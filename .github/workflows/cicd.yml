@@ -54,6 +54,7 @@ jobs:
           mkdir temp/scripts
           cp scripts/* temp/scripts
           tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
+          ls -al
 
       - name: Upload Artifact to OCI Object Storage
         if: github.event_name == 'push'
