@@ -19,13 +19,27 @@ jobs:
       OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
 
     steps:
+      - name: Deploy to OCI Compute Instance via SSH
+        if: github.event_name == 'push'
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
+            export PATH=$HOME/bin:$PATH
+            cd /home/ubuntu/routine-connect
+            oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
+                              --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
+                              --file ${env.APPLICATION_NAME}.tar.gz
+            tar xvfz ${env.APPLICATION_NAME}.tar.gz
+            bash stop-server.sh
+            bash start-server.sh
+          EOF
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup SSH Key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/private_key.pem
-          chmod 600 ~/private_key.pem
+          printf '%b' "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -61,17 +75,3 @@ jobs:
         with:
           command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --debug --force"
           silent: false
-
-      - name: Deploy to OCI Compute Instance via SSH
-        if: github.event_name == 'push'
-        run: |
-          ssh -i ~/private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ vars.OCI_INSTANCE_URL }} << 'EOF'
-            export PATH=$HOME/bin:$PATH
-            cd /home/ubuntu/routine-connect
-            oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
-                              --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
-                              --file ${env.APPLICATION_NAME}.tar.gz
-            tar xvfz ${env.APPLICATION_NAME}.tar.gz
-            bash stop-server.sh
-            bash start-server.sh
-          EOF
