@@ -59,7 +59,7 @@ jobs:
         if: github.event_name == 'push'
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         with:
-          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --namespace ${{ vars.OCI_NAMESPACE }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --debug"
+          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --debug"
           silent: false
 
       - name: Deploy to OCI Compute Instance via SSH
