@@ -54,8 +54,7 @@ jobs:
         if: github.event_name == 'push'
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         with:
-          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --debug --force"
-          silent: false
+          command: "os object put --bucket-name ${{ vars.OCI_BUCKET_NAME }} --file ${{ env.APPLICATION_NAME }}.tar.gz --name deploy/${{ env.APPLICATION_NAME }}.tar.gz --force"
 
       - name: Deploy to OCI Compute Instance via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -71,6 +70,6 @@ jobs:
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
                               --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
                               --file ${env.APPLICATION_NAME}.tar.gz
-            tar xvfz ${env.APPLICATION_NAME}.tar.gz
+            tar xvfz ${{ env.APPLICATION_NAME }}.tar.gz
             bash stop-server.sh
             bash start-server.sh
