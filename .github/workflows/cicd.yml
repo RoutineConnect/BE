@@ -22,29 +22,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to OCI Compute Instance via SSH
-        if: github.event_name == 'push'
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ vars.OCI_INSTANCE_URL }}
-          username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            export PATH=$HOME/bin:$PATH
-              cd /home/ubuntu/routine-connect
-              oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
-                                --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
-                                --file ${env.APPLICATION_NAME}.tar.gz
-              tar xvfz ${env.APPLICATION_NAME}.tar.gz
-              bash stop-server.sh
-              bash start-server.sh
-            EOF
-
       - name: Setup SSH Key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > private_key.pem
-          chmod 600 private_key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan "${{ vars.OCI_INSTANCE_URL }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+
+      - name: Deploy to OCI Compute Instance via SSH
+        if: github.event_name == 'push'
+        run: |
+          ssh ubuntu@${{ vars.OCI_INSTANCE_URL }}
+            export PATH=$HOME/bin:$PATH
+            cd /home/ubuntu/routine-connect
+            oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
+                              --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
+                              --file ${env.APPLICATION_NAME}.tar.gz
+            tar xvfz ${env.APPLICATION_NAME}.tar.gz
+            bash stop-server.sh
+            bash start-server.sh
+          EOF
 
       - name: Setup Java
         uses: actions/setup-java@v4
