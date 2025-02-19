@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [ main, dev ]
   pull_request:
-    branches: [main, dev]
+    branches: [ main, dev ]
   workflow_dispatch:
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           mkdir temp
-          cp build/libs/*.jar appspec.yml temp/
+          cp build/libs/*.jar temp/
           mkdir temp/scripts
           cp scripts/* temp/scripts
           tar cvfz ${{ env.APPLICATION_NAME }}.tar.gz temp/
@@ -70,6 +70,6 @@ jobs:
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
                               --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
                               --file ${{ env.APPLICATION_NAME }}.tar.gz
-            tar xvfz ${{ env.APPLICATION_NAME }}.tar.gz
-            bash stop-server.sh
-            bash start-server.sh
+            tar --overwrite -xvf ${APPLICATION_NAME}.tar.gz && rm -f ${APPLICATION_NAME}.tar.gz
+            bash scripts/stop-server.sh
+            bash scripts/start-server.sh
