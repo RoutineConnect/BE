@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source ~/.bashrc
-PROJECT_ROOT="/home/ec2-user/routine-connect"
+PROJECT_ROOT="/home/ubuntu/routine-connect"
 JAR_FILE=$(ls -tr $PROJECT_ROOT/*SNAPSHOT.jar)
 
 APP_LOG="$PROJECT_ROOT/application.log"

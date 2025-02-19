@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT_ROOT="/home/ec2-user/routine-connect"
+PROJECT_ROOT="/home/ubuntu/routine-connect"
 CURRENT_PID=$(pgrep -fla java | grep routineconnect | awk '{print $1}')
 DEPLOY_LOG="$PROJECT_ROOT/deploy.log"
 
