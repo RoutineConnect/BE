@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -70,6 +70,6 @@ jobs:
             oci os object get --bucket-name ${{ vars.OCI_BUCKET_NAME }} \
                               --name deploy/${{ env.APPLICATION_NAME }}.tar.gz \
                               --file ${{ env.APPLICATION_NAME }}.tar.gz
-            tar --overwrite -xvf ${APPLICATION_NAME}.tar.gz && rm -f ${APPLICATION_NAME}.tar.gz
+            tar --overwrite -xvfz ${{ env.APPLICATION_NAME }}.tar.gz --strip-components=1
             bash scripts/stop-server.sh
             bash scripts/start-server.sh
